@@ -1,0 +1,99 @@
+- # Avacyn, Angel of Hope (HA6 #1) by Jason Chan
+  scryfallId: 698fed00-1acd-42cf-969a-e2dce90356e8
+  expansion:  AVR
+  number:     6
+
+- # Phyrexian Metamorph (HA6 #2) by Jana Schirmer & Johannes Voss
+  scryfallId: 89ca6469-d68d-41f4-ac19-a31851a587ce
+  expansion:  NPH
+  number:     42
+
+- # Ophiomancer (HA6 #3) by Caroline Gariba
+  scryfallId: d4a9042d-62e2-4632-ba37-f7090f631df2
+  expansion:  CC2
+  number:     3
+
+- # Night of Souls' Betrayal (HA6 #4) by Greg Staples
+  scryfallId: 015f8c38-5d0e-4bdb-a705-24313dcece99
+  expansion:  CHK
+  number:     133
+
+- # Laelia, the Blade Reforged (HA6 #5) by Wisnu Tan
+  scryfallId: 44efb0b8-f6a7-4b56-a2f8-8899d01a71d1
+  expansion:  C21
+  number:     53
+
+- # Tarmogoyf (HA6 #7) by Filip Burburan
+  scryfallId: c35cae61-8617-4c70-890e-eb2625ec650a
+  expansion:  UMA
+  number:     187
+
+- # Go-Shintai of Life's Origin (HA6 #6) by Alexander Mokhov
+  scryfallId: 95fee9d9-7c78-4a75-80e0-3c4ddd321a48
+  expansion:  NEC
+  number:     37
+
+- # Razortide Bridge (HA6 #15) by Rob Alexander
+  scryfallId: c6373272-86ca-4409-bfd8-6fffbad1c0e9
+  expansion:  MH2
+  number:     252
+
+- # Goldmire Bridge (HA6 #13) by Aaron Miller
+  scryfallId: 699beb4d-a313-4c70-8552-9e136dfdc50d
+  expansion:  MH2
+  number:     247
+
+- # Glimpse the Unthinkable (HA6 #8) by Brandon Kitkouski
+  scryfallId: 9ed2d0b6-df6c-49ab-ba7b-7321ac68afe2
+  expansion:  RAV
+  number:     208
+
+- # Mistvault Bridge (HA6 #14) by Mathias Kollros
+  scryfallId: 328efebe-4f98-4b99-87a3-a63a4600a7e0
+  expansion:  MH2
+  number:     249
+
+- # Silverbluff Bridge (HA6 #17) by Joseph Meehan
+  scryfallId: b365a7d7-f2ba-4b76-8c99-790f43e6bba2
+  expansion:  MH2
+  number:     255
+
+- # Drossforge Bridge (HA6 #12) by Raoul Vitale
+  scryfallId: 2232d657-2729-41f6-aa84-0c1b253b5aeb
+  expansion:  MH2
+  number:     246
+
+- # Darkmoss Bridge (HA6 #11) by Raoul Vitale
+  scryfallId: 1591ada3-b10e-42ab-aad9-e51478bdb3bf
+  expansion:  MH2
+  number:     245
+
+- # Slagwoods Bridge (HA6 #18) by Lucas Graciano
+  scryfallId: 9a5b0957-f682-4cbc-9f0b-c5fc98ba415c
+  expansion:  MH2
+  number:     256
+
+- # Rustvale Bridge (HA6 #16) by Craig J Spearing
+  scryfallId: f3433515-e088-4a34-a815-9d8273767d4b
+  expansion:  MH2
+  number:     253
+
+- # Thornglint Bridge (HA6 #20) by Randy Gallegos
+  scryfallId: 98863d8f-5e03-451d-9f37-440a2a23da40
+  expansion:  MH2
+  number:     258
+
+- # Tanglepool Bridge (HA6 #19) by Randy Gallegos
+  scryfallId: 6516106f-b5ef-46e5-9ea6-231f413adb29
+  expansion:  MH2
+  number:     257
+
+- # Chalice of the Void (HA6 #9) by Mark Zug
+  scryfallId: c2a94c2f-9cca-4984-aba9-3e1bc3574163
+  expansion:  MRD
+  number:     150
+
+- # Retrofitter Foundry (HA6 #10) by Dmitry Burmak
+  scryfallId: d9aa3c4e-b5fb-4443-b838-a9ba7f4b9be7
+  expansion:  C18
+  number:     57

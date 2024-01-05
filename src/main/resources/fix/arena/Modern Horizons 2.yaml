@@ -1,0 +1,634 @@
+- # Arcbound Mouser (MH2 #3)
+  scryfallId: 9d66e724-49ee-4f08-a160-584350de1d95
+  expansion:  MH2
+  number:     3
+
+- # Esper Sentinel (MH2 #12)
+  scryfallId: f3537373-ef54-4578-9d05-6216420ee349
+  expansion:  MH2
+  number:     12
+
+- # Arcbound Prototype (MH2 #4)
+  scryfallId: 1cb0a1a4-9216-47f8-a4e3-20fe0de6a518
+  expansion:  MH2
+  number:     4
+
+- # Barbed Spike (MH2 #5)
+  scryfallId: c75c8631-e630-402b-a559-f1b1aa49763c
+  expansion:  MH2
+  number:     5
+
+- # Fairgrounds Patrol (MH2 #13)
+  scryfallId: 237e07ed-24ef-40f7-91fc-fe212d948ca8
+  expansion:  MH2
+  number:     13
+
+- # Skyblade's Boon (MH2 #31)
+  scryfallId: e5705397-525b-4106-92ab-fe8ec9f561a2
+  expansion:  MH2
+  number:     31
+
+- # Abiding Grace (MH2 #1)
+  scryfallId: db113c47-c403-4c7f-9fa9-212c977df8d1
+  expansion:  MH2
+  number:     1
+
+- # Healer's Flock (MH2 #16)
+  scryfallId: b93b5429-8512-4ab6-9ecd-fa270e0144f3
+  expansion:  MH2
+  number:     16
+
+- # Late to Dinner (MH2 #19)
+  scryfallId: 6633cab9-23f9-474e-96f1-ca7c0c67691c
+  expansion:  MH2
+  number:     19
+
+- # Thraben Watcher (MH2 #34)
+  scryfallId: 5b4e0e11-2f16-42ad-b835-c9410c4bd7e3
+  expansion:  MH2
+  number:     34
+
+- # Disciple of the Sun (MH2 #11)
+  scryfallId: ad9723a1-7c5f-49ea-a8c6-24ee572d839f
+  expansion:  MH2
+  number:     11
+
+- # Scour the Desert (MH2 #28)
+  scryfallId: b87d368f-e1e0-41ab-9da0-f07c01c8ae38
+  expansion:  MH2
+  number:     28
+
+- # Glorious Enforcer (MH2 #14)
+  scryfallId: de1365aa-e814-471b-8c9e-cf4c5011bcc3
+  expansion:  MH2
+  number:     14
+
+- # Serra's Emissary (MH2 #30)
+  scryfallId: b6534049-3045-4546-b1e8-e5b1b0df5f56
+  expansion:  MH2
+  number:     30
+
+- # Soul of Migration (MH2 #33)
+  scryfallId: 4541217f-5e86-491b-918b-ed7a2eb3e4eb
+  expansion:  MH2
+  number:     33
+
+- # Floodhound (MH2 #42)
+  scryfallId: a5b1ac05-bd87-4605-8443-0469276e1e3a
+  expansion:  MH2
+  number:     42
+
+- # Hard Evidence (MH2 #46)
+  scryfallId: 501599d6-1072-4124-b05d-01f96de153f3
+  expansion:  MH2
+  number:     46
+
+- # Foul Watcher (MH2 #43)
+  scryfallId: 71d00175-5e5e-40dd-a71b-5ba56d763134
+  expansion:  MH2
+  number:     43
+
+- # Parcel Myr (MH2 #54)
+  scryfallId: 0f288ee5-4bf9-476a-a89f-b6b8fa7e87dc
+  expansion:  MH2
+  number:     54
+
+- # Raving Visionary (MH2 #56)
+  scryfallId: 347cee3a-6e0e-43c2-85e5-531b19297c3d
+  expansion:  MH2
+  number:     56
+
+- # Recalibrate (MH2 #57)
+  scryfallId: b95cc841-4e4f-4896-a073-f2e246ca62e4
+  expansion:  MH2
+  number:     57
+
+- # Rise and Shine (MH2 #58)
+  scryfallId: 2e658cb2-11c5-4b59-a91c-f26ac28e82af
+  expansion:  MH2
+  number:     58
+
+- # Scuttletide (MH2 #61)
+  scryfallId: 38e4ce27-aba2-4a3f-8de7-d442323d8be2
+  expansion:  MH2
+  number:     61
+
+- # Burdened Aerialist (MH2 #38)
+  scryfallId: 8387bc7c-2e0a-4ff2-9882-e5e7c92c8463
+  expansion:  MH2
+  number:     38
+
+- # Etherium Spinner (MH2 #40)
+  scryfallId: cdc8056f-4c8e-4a2b-b32f-c50c2cb7601a
+  expansion:  MH2
+  number:     40
+
+- # Ghost-Lit Drifter (MH2 #45)
+  scryfallId: 5a8cd89e-d849-4107-a629-98eae4c91489
+  expansion:  MH2
+  number:     45
+
+- # So Shiny (MH2 #63)
+  scryfallId: 135db79f-6f07-486c-ae3a-d4244aaf6dc8
+  expansion:  MH2
+  number:     63
+
+- # Svyelun of Sea and Sky (MH2 #69)
+  scryfallId: c6f9ece1-669a-47c9-96c3-1e1dbf87421c
+  expansion:  MH2
+  number:     69
+
+- # Aeromoeba (MH2 #37)
+  scryfallId: 2a304f7e-0b9e-4ef6-9ad8-34350839f7d9
+  expansion:  MH2
+  number:     37
+
+- # Filigree Attendant (MH2 #41)
+  scryfallId: e0cb828c-a19b-4e6d-853f-85e5ea7cadf8
+  expansion:  MH2
+  number:     41
+
+- # Wonder (MH2 #271)
+  scryfallId: 675d6729-23da-4f0b-b222-fe54fe24dd90
+  expansion:  MH2
+  number:     271
+
+- # Specimen Collector (MH2 #64)
+  scryfallId: bdfaed69-bc4c-4c73-abc3-00dce5e0177e
+  expansion:  MH2
+  number:     64
+
+- # Steelfin Whale (MH2 #65)
+  scryfallId: 7e7ca8b6-d7e0-4af2-a578-bf45a8731c19
+  expansion:  MH2
+  number:     65
+
+- # Junk Winder (MH2 #48)
+  scryfallId: 66b7833a-a6b6-4aca-b574-66a6aea471ea
+  expansion:  MH2
+  number:     48
+
+- # Thought Monitor (MH2 #71)
+  scryfallId: 996c1952-8d10-4296-8960-ff8993833649
+  expansion:  MH2
+  number:     71
+
+- # Bone Shards (MH2 #76)
+  scryfallId: 1ee98955-4c47-4d45-9377-608dfa755337
+  expansion:  MH2
+  number:     76
+
+- # Echoing Return (MH2 #83)
+  scryfallId: 39eb0e67-f989-4430-b2d6-b8b647f0b7ca
+  expansion:  MH2
+  number:     83
+
+- # Nested Shambler (MH2 #95)
+  scryfallId: 9851f290-f502-49f8-9b48-67f7966d4e34
+  expansion:  MH2
+  number:     95
+
+- # Cabal Initiate (MH2 #78)
+  scryfallId: b279a03f-85ab-43f2-b5ca-1bc10563e5ad
+  expansion:  MH2
+  number:     78
+
+- # Clattering Augur (MH2 #79)
+  scryfallId: a22dd28d-eb65-410a-af17-51b5064c6033
+  expansion:  MH2
+  number:     79
+
+- # Legion Vanguard (MH2 #90)
+  scryfallId: d0ac1b48-dcfd-48a1-b999-ccc642596d28
+  expansion:  MH2
+  number:     90
+
+- # Sinister Starfish (MH2 #99)
+  scryfallId: db209732-c290-4999-a1aa-2369dfa8790c
+  expansion:  MH2
+  number:     99
+
+- # Sudden Edict (MH2 #100)
+  scryfallId: 57cc8aeb-221d-46a1-b03f-df8499bba26d
+  expansion:  MH2
+  number:     100
+
+- # Vermin Gorger (MH2 #107)
+  scryfallId: d3166b10-5bc3-4db6-bb5b-81045d98e446
+  expansion:  MH2
+  number:     107
+
+- # Discerning Taste (MH2 #82)
+  scryfallId: 9f395828-9d6d-4ffa-be92-b681350031b0
+  expansion:  MH2
+  number:     82
+
+- # Gilt-Blade Prowler (MH2 #86)
+  scryfallId: 32a8cf47-cfe4-4a11-a57d-bebeb2fae437
+  expansion:  MH2
+  number:     86
+
+- # Hell Mongrel (MH2 #88)
+  scryfallId: f7da32a3-8e33-4603-abd2-8db144062f6a
+  expansion:  MH2
+  number:     88
+
+- # Kitchen Imp (MH2 #89)
+  scryfallId: 836ae711-e62f-49ec-850e-d25f6fd2a4d4
+  expansion:  MH2
+  number:     89
+
+- # Necromancer's Familiar (MH2 #94)
+  scryfallId: e4dfb84f-582a-4fe2-9710-8b480a268571
+  expansion:  MH2
+  number:     94
+
+- # Tourach's Canticle (MH2 #103)
+  scryfallId: 4d97fd7d-c29f-4db0-b909-2f6aa9c39d65
+  expansion:  MH2
+  number:     103
+
+- # Necrogoyf (MH2 #93)
+  scryfallId: f200ea9a-198b-4ba2-ad2b-ea4a133b7f40
+  expansion:  MH2
+  number:     93
+
+- # Young Necromancer (MH2 #110)
+  scryfallId: 84b5f6da-5e0f-4cce-92fe-7aa69124e265
+  expansion:  MH2
+  number:     110
+
+- # Archfiend of Sorrows (MH2 #74)
+  scryfallId: f4d089f1-718e-4853-a634-64114735fba5
+  expansion:  MH2
+  number:     74
+
+- # Blazing Rootwalla (MH2 #115)
+  scryfallId: 4404fc9c-ef02-479c-9638-0cc163f0b48f
+  expansion:  MH2
+  number:     115
+
+- # Dragon's Rage Channeler (MH2 #121)
+  scryfallId: 4ced112a-e775-4f97-97b3-74877e9dce12
+  expansion:  MH2
+  number:     121
+
+- # Strike It Rich (MH2 #143)
+  scryfallId: 1c7c2814-a617-4123-acdf-1b01b2768210
+  expansion:  MH2
+  number:     143
+
+- # Unholy Heat (MH2 #145)
+  scryfallId: 2b73d294-6ab1-4051-9b0f-d8e335d37674
+  expansion:  MH2
+  number:     145
+
+- # Bloodbraid Marauder (MH2 #116)
+  scryfallId: 6286fd93-bb97-4721-8a40-1c5a884c2edb
+  expansion:  MH2
+  number:     116
+
+- # Faithless Salvaging (MH2 #122)
+  scryfallId: c6ed4077-4ed5-48fb-91c9-a9195d652978
+  expansion:  MH2
+  number:     122
+
+- # Harmonic Prodigy (MH2 #132)
+  scryfallId: 22579ac0-ad3f-4000-a65a-46a17a7f1aa5
+  expansion:  MH2
+  number:     132
+
+- # Lightning Spear (MH2 #134)
+  scryfallId: f72fcda4-feb4-46e4-87d9-88bd95474fe9
+  expansion:  MH2
+  number:     134
+
+- # Viashino Lashclaw (MH2 #146)
+  scryfallId: 3457e346-a5de-4624-b577-f59d4c186537
+  expansion:  MH2
+  number:     146
+
+- # Arcbound Tracker (MH2 #112)
+  scryfallId: 881175c4-fee5-4c39-ad25-145ef73569ce
+  expansion:  MH2
+  number:     112
+
+- # Breya's Apprentice (MH2 #117)
+  scryfallId: c32b5b2e-dabf-4672-b476-4873781f636e
+  expansion:  MH2
+  number:     117
+
+- # Captain Ripley Vance (MH2 #119)
+  scryfallId: 71052204-d35c-4603-9af6-a1691f438d48
+  expansion:  MH2
+  number:     119
+
+- # Galvanic Relay (MH2 #127)
+  scryfallId: 06373318-e548-4664-b227-17e3b6fd0a88
+  expansion:  MH2
+  number:     127
+
+- # Skophos Reaver (MH2 #140)
+  scryfallId: 32691e3f-dea9-45ac-96fe-96b34d5116a9
+  expansion:  MH2
+  number:     140
+
+- # Gouged Zealot (MH2 #131)
+  scryfallId: 5c0595a6-a9e5-4ea8-b733-382e6c365759
+  expansion:  MH2
+  number:     131
+
+- # Arcbound Slasher (MH2 #111)
+  scryfallId: dcafff1a-e220-40ff-8c00-de6037219bc6
+  expansion:  MH2
+  number:     111
+
+- # Spreading Insurrection (MH2 #142)
+  scryfallId: f1c1918b-2f7a-4cab-9547-029ebc589000
+  expansion:  MH2
+  number:     142
+
+- # Revolutionist (MH2 #139)
+  scryfallId: bb8f3008-a3ba-4f73-afa6-ad81074b3196
+  expansion:  MH2
+  number:     139
+
+- # Slag Strider (MH2 #141)
+  scryfallId: a3a271f3-ea5f-4947-aac3-b4cffdfa87ac
+  expansion:  MH2
+  number:     141
+
+- # Fast // Furious (MH2 #123)
+  scryfallId: 5b209759-6215-49e8-a6a0-a6c94040adb2
+  expansion:  MH2
+  number:     123
+
+- # Glimmer Bairn (MH2 #163)
+  scryfallId: 03250752-bd85-485a-b19a-fa344c4ffd50
+  expansion:  MH2
+  number:     163
+
+- # Squirrel Sanctuary (MH2 #174)
+  scryfallId: ed6ab503-5e9a-4339-a0e7-a909b2908f41
+  expansion:  MH2
+  number:     174
+
+- # Wren's Run Hydra (MH2 #183)
+  scryfallId: 5198ac65-118c-4616-8315-d71d41b883ad
+  expansion:  MH2
+  number:     183
+
+- # Chatterstorm (MH2 #152)
+  scryfallId: b34f0ac1-6894-4761-b62c-b85d927acf09
+  expansion:  MH2
+  number:     152
+
+- # Duskshell Crawler (MH2 #156)
+  scryfallId: 1af03fc3-5eb6-404e-96d9-e291a1e11ec3
+  expansion:  MH2
+  number:     156
+
+- # Sanctum Weaver (MH2 #171)
+  scryfallId: 4d42e22d-f60e-40c5-b069-5e1708f3bebc
+  expansion:  MH2
+  number:     171
+
+- # Smell Fear (MH2 #173)
+  scryfallId: 956a2a42-6a91-45b5-99f1-87c2cf1dd608
+  expansion:  MH2
+  number:     173
+
+- # Squirrel Sovereign (MH2 #175)
+  scryfallId: 8f739d55-30d6-4879-872a-82c6778113de
+  expansion:  MH2
+  number:     175
+
+- # Sylvan Anthem (MH2 #176)
+  scryfallId: a119edc2-9e0f-43d1-a13d-25827f86e3e3
+  expansion:  MH2
+  number:     176
+
+- # Verdant Command (MH2 #182)
+  scryfallId: 83031ea8-a6c9-4318-af16-bba701dd76bb
+  expansion:  MH2
+  number:     182
+
+- # Chatterfang, Squirrel General (MH2 #151)
+  scryfallId: 1785cf85-1ac0-4246-9b89-1a8221a8e1b2
+  expansion:  MH2
+  number:     151
+
+- # Chitterspitter (MH2 #153)
+  scryfallId: 7ee33ff3-d3d6-4519-9d9f-72e342d8b215
+  expansion:  MH2
+  number:     153
+
+- # Deepwood Denizen (MH2 #155)
+  scryfallId: 333f02f7-3b8a-41e3-9ae5-2151539e64ad
+  expansion:  MH2
+  number:     155
+
+- # Jewel-Eyed Cobra (MH2 #168)
+  scryfallId: 8f8db60d-3adf-45e1-b4d0-3b5e24f5e01d
+  expansion:  MH2
+  number:     168
+
+- # Scurry Oak (MH2 #172)
+  scryfallId: 0fb48c2e-ee0f-4fae-9c22-247870c10d5b
+  expansion:  MH2
+  number:     172
+
+- # Squirrel Mob (MH2 #286)
+  scryfallId: fa6bfc95-ec7e-46dd-88fd-b0e1ba48bfbc
+  expansion:  MH2
+  number:     286
+
+- # Tireless Provisioner (MH2 #180)
+  scryfallId: 5c5be54d-660e-42ab-b5ea-5e1cf3bad0bc
+  expansion:  MH2
+  number:     180
+
+- # Bannerhide Krushok (MH2 #149)
+  scryfallId: 1271251b-7d79-4cb4-80bb-98574aa63249
+  expansion:  MH2
+  number:     149
+
+- # Timeless Witness (MH2 #179)
+  scryfallId: f22c07e2-91d2-4edb-bd2b-cca6d4cefcc9
+  expansion:  MH2
+  number:     179
+
+- # Urban Daggertooth (MH2 #181)
+  scryfallId: 4ab83a39-d90d-403e-b74d-fe99c8b2aacd
+  expansion:  MH2
+  number:     181
+
+- # Aeve, Progenitor Ooze (MH2 #148)
+  scryfallId: dfe9b1b8-dffe-427d-be1e-2c6b8395bd54
+  expansion:  MH2
+  number:     148
+
+- # Funnel-Web Recluse (MH2 #161)
+  scryfallId: b486c9cf-b0a6-44a4-b4c1-b3f5eed6c294
+  expansion:  MH2
+  number:     161
+
+- # Herd Baloth (MH2 #165)
+  scryfallId: c1e9cef5-c55f-47d9-9d2f-300dab8fcb0b
+  expansion:  MH2
+  number:     165
+
+- # Hunting Pack (MH2 #284)
+  scryfallId: 8c9eb595-e8fa-4a5e-abca-d30613c0e28f
+  expansion:  MH2
+  number:     284
+
+- # Chrome Courier (MH2 #190)
+  scryfallId: a11d8da1-a183-470a-b4ed-2e35ac5ab9a9
+  expansion:  MH2
+  number:     190
+
+- # Priest of Fell Rites (MH2 #208)
+  scryfallId: d116329d-6de7-402c-821d-e9aeba9ad2b1
+  expansion:  MH2
+  number:     208
+
+- # Breathless Knight (MH2 #187)
+  scryfallId: c4785739-821d-49b0-a298-3c2b95e16972
+  expansion:  MH2
+  number:     187
+
+- # Graceful Restoration (MH2 #201)
+  scryfallId: f03d7c3c-02f2-4c42-bcfa-0b83de30f607
+  expansion:  MH2
+  number:     201
+
+- # Lazotep Chancellor (MH2 #203)
+  scryfallId: 82e68f3d-ef94-4651-a256-c72017f64b21
+  expansion:  MH2
+  number:     203
+
+- # Storm God's Oracle (MH2 #213)
+  scryfallId: a6d22f24-f752-4bc8-ba97-061b2c060ec8
+  expansion:  MH2
+  number:     213
+
+- # Prophetic Titan (MH2 #209)
+  scryfallId: 468b92ae-eb84-4548-a5e5-a07c79b77f7f
+  expansion:  MH2
+  number:     209
+
+- # Rakdos Headliner (MH2 #210)
+  scryfallId: aad6576b-605c-4007-a2a7-0d7550520d6d
+  expansion:  MH2
+  number:     210
+
+- # Chainer, Nightmare Adept (MH2 #289)
+  scryfallId: d8089e7f-7619-43fe-8e0b-31ce5d988a1b
+  expansion:  MH2
+  number:     289
+
+- # Terminal Agony (MH2 #215)
+  scryfallId: 314e94ad-0e12-48bb-aae1-2c842943114a
+  expansion:  MH2
+  number:     215
+
+- # Ravenous Squirrel (MH2 #211)
+  scryfallId: 9f44a15c-1bb4-4fb8-88a0-e4d3f2dee1b4
+  expansion:  MH2
+  number:     211
+
+- # Drey Keeper (MH2 #194)
+  scryfallId: 995529d1-e2b0-4cce-bd40-56c7ef3c33da
+  expansion:  MH2
+  number:     194
+
+- # Goblin Anarchomancer (MH2 #200)
+  scryfallId: 633a3423-501d-4b22-95a6-743233be521e
+  expansion:  MH2
+  number:     200
+
+- # Territorial Kavu (MH2 #216)
+  scryfallId: 2605df98-0b02-4aab-bc36-01e93c693743
+  expansion:  MH2
+  number:     216
+
+- # Zabaz, the Glimmerwasp (MH2 #243)
+  scryfallId: 8c1cce91-7c81-45d9-bbec-b085e794791d
+  expansion:  MH2
+  number:     243
+
+- # Arcbound Shikari (MH2 #184)
+  scryfallId: 8d54c510-19bf-4da4-a51b-1caadf960654
+  expansion:  MH2
+  number:     184
+
+- # Arcus Acolyte (MH2 #185)
+  scryfallId: d8546eaa-1e64-4e70-b6a5-85892bab8c47
+  expansion:  MH2
+  number:     185
+
+- # Sterling Grove (MH2 #293)
+  scryfallId: ba03e105-a76c-4769-a35a-d780448890ec
+  expansion:  MH2
+  number:     293
+
+- # Sythis, Harvest's Hand (MH2 #214)
+  scryfallId: 0babfe00-9bad-48fc-b3b1-df8280242fd2
+  expansion:  MH2
+  number:     214
+
+- # Captured by Lagacs (MH2 #188)
+  scryfallId: 7ce1c2a8-688b-4f63-8d58-e325efc6052a
+  expansion:  MH2
+  number:     188
+
+- # Combine Chrysalis (MH2 #191)
+  scryfallId: f7d54ec2-a458-4e13-97b8-be99b7338548
+  expansion:  MH2
+  number:     191
+
+- # Lonis, Cryptozoologist (MH2 #204)
+  scryfallId: 5dfd08da-6717-49ee-94ba-2562224f5baa
+  expansion:  MH2
+  number:     204
+
+- # Wavesifter (MH2 #217)
+  scryfallId: 0a269277-7f4e-40de-a2b4-53aa50cfd665
+  expansion:  MH2
+  number:     217
+
+- # Myr Scrapling (MH2 #230)
+  scryfallId: 5b9072a5-bd7f-4007-a34a-ebe251c95356
+  expansion:  MH2
+  number:     230
+
+- # Batterbone (MH2 #221)
+  scryfallId: 94266c32-774f-42fa-84d7-7b646c950587
+  expansion:  MH2
+  number:     221
+
+- # Monoskelion (MH2 #229)
+  scryfallId: 4736aae2-5136-4f8f-9283-baf6b542a6a8
+  expansion:  MH2
+  number:     229
+
+- # Ornithopter of Paradise (MH2 #232)
+  scryfallId: 025b0f0f-daf6-4071-82e7-39c015447ce4
+  expansion:  MH2
+  number:     232
+
+- # Nettlecyst (MH2 #231)
+  scryfallId: 4a0bb5dc-75a6-4bd6-81f8-611197fb0fba
+  expansion:  MH2
+  number:     231
+
+- # Sanctuary Raptor (MH2 #233)
+  scryfallId: ccbdb1eb-2546-4c1a-bfab-ef61bdadd364
+  expansion:  MH2
+  number:     233
+
+- # Altar of the Goyf (MH2 #220)
+  scryfallId: e0b3a98f-2b3c-438b-b78c-eef8d917f68e
+  expansion:  MH2
+  number:     220

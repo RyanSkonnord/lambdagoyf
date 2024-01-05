@@ -1,0 +1,2 @@
+- Yes: "MTGO"
+- No: "MODO"

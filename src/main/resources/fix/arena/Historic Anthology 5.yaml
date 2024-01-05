@@ -1,0 +1,124 @@
+- # Court Homunculus (HA5 #999-CH)
+  scryfallId: 8a8905ac-f349-4f02-a316-65dc702ffb37
+  expansion:  CONF
+  number:     6
+
+- # Intangible Virtue (HA5 #999-IV)
+  scryfallId: 12961074-f667-4653-8268-0b2798b354ba
+  expansion:  ISD
+  number:     19
+
+- # Ray of Revelation (HA5 #999-ROR)
+  scryfallId: 658f5cd6-4b46-4fb5-a774-ab410b200ea3
+  expansion:  DKA
+  number:     17
+
+- # Elesh Norn, Grand Cenobite (HA5 #999-ENGC)
+  scryfallId: a4f74725-44d4-4ad1-8365-b21bc67e952e
+  expansion:  NPH
+  number:     9
+
+- # Stifle (HA5 #999-S)
+  scryfallId: 136e3710-9696-44ce-89c6-83a470e04e5d
+  expansion:  SCG
+  number:     52
+
+- # Merfolk Looter (HA5 #999-ML)
+  scryfallId: db0e0989-e21b-4737-b653-69746f6ef974
+  expansion:  M10
+  number:     61
+
+- # Whirler Rogue (HA5 #999-WN)
+  scryfallId: 3547e067-97a9-4500-8a0b-3b0321cf2846
+  expansion:  ORI
+  number:     83
+
+- # Reverse Engineer (HA5 #999-RE)
+  scryfallId: 0411f5be-898a-4adc-bb89-a839a3b21c05
+  expansion:  AER
+  number:     42
+
+- # Jin-Gitaxias, Core Augur (HA5 #999-JGCA)
+  scryfallId: a7b8a82b-7dc2-4a39-8af5-c71511d164a3
+  expansion:  NPH
+  number:     37
+
+- # Vault Skirge (HA5 #999-VS)
+  scryfallId: d0bde0ae-5245-4251-a7bf-ddd8373412f3
+  expansion:  NPH
+  number:     76
+
+- # Sheoldred, Whispering One (HA5 #999-SWO)
+  scryfallId: 3b3d4fc9-ed2f-48ad-9f02-a03538ac9196
+  expansion:  NPH
+  number:     73
+
+- # Ancient Grudge (HA5 #999-AG)
+  scryfallId: c6440065-8d1e-4767-9706-8906d5aa29a9
+  expansion:  ISD
+  number:     127
+
+- # Trash for Treasure (HA5 #999-TFT)
+  scryfallId: bc9d0757-92e3-4e8d-9751-ac13ca639bde
+  expansion:  2XM
+  number:     148
+
+- # Urabrask the Hidden (HA5 #999-UTH)
+  scryfallId: b3a660f8-e583-4442-90d6-2b270cb4ff91
+  expansion:  NPH
+  number:     98
+
+- # Dragonstorm (HA5 #999-DS)
+  scryfallId: 0be15359-8b3b-430e-b99f-7e0657d1a98d
+  expansion:  SCG
+  number:     90
+
+- # Into the North (HA5 #999-ITN)
+  scryfallId: 80d21973-a06c-49f8-8224-06e8d8c280eb
+  expansion:  CSP
+  number:     111
+
+- # Vorinclex, Voice of Hunger (HA5 #999-VVOH)
+  scryfallId: 46886564-eef4-4a04-a148-c23f2a1877af
+  expansion:  NPH
+  number:     127
+
+- # Ojutai's Command (HA5 #999-OC)
+  scryfallId: 823b3d6d-31cb-4f0f-bdd1-73856d61f1a5
+  expansion:  DTK
+  number:     227
+
+- # Silumgar's Command (HA5 #999-SC)
+  scryfallId: f132720a-d0f5-42d4-b917-f378d075beee
+  expansion:  DTK
+  number:     232
+
+- # Kolaghan's Command (HA5 #999-KC)
+  scryfallId: 5277892b-ed64-4e2f-a267-d31f3599729a
+  expansion:  DTK
+  number:     224
+
+- # Grisly Salvage (HA5 #999-GS)
+  scryfallId: 86565584-3f85-45af-9942-ac3848fa3978
+  expansion:  RTR
+  number:     165
+
+- # Atarka's Command (HA5 #99-AC)
+  scryfallId: 12ddf922-f5ae-488f-9e1d-bb1bd21f2b61
+  expansion:  DTK
+  number:     213
+
+- # Dromoka's Command (HA5 #999-DC)
+  scryfallId: e695af5f-f87e-41b5-98a4-a21bbd82b920
+  expansion:  DTK
+  number:     221
+
+- # Relic of Progenitus (HA5 #999-ROP)
+  scryfallId: 376ffc81-27cf-4d71-a557-3f4a54caa983
+  expansion:  ALA
+  number:     218
+
+- # Ichor Wellspring (HA5 #999-IW)
+  scryfallId: 012f7d7a-1de3-4012-8e5e-51828e839f2d
+  expansion:  MBS
+  number:     110

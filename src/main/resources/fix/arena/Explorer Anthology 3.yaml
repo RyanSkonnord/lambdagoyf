@@ -1,0 +1,124 @@
+- # Cyclonic Rift (EA3 #1) by Chris Rahn
+  scryfallId: 6a6c1a21-5fe1-4329-9df8-cbb854464b2a
+  expansion:  RTR
+  number:     35
+
+- # Abbot of Keral Keep (EA3 #2) by Deruchenko Alexander
+  scryfallId: 522d3a79-2523-4680-8853-6560c626eaa4
+  expansion:  ORI
+  number:     127
+
+- # Shrapnel Blast (EA3 #3) by Hideaki Takamura
+  scryfallId: 80b04753-3696-430c-9dd1-c24c14227720
+  expansion:  M15
+  number:     161
+
+- # Sylvan Scrying (EA3 #4) by Daniel Ljunggren
+  scryfallId: 37be0614-1433-429c-a3de-27b415470c5b
+  expansion:  BFZ
+  number:     192
+
+- # Chord of Calling (EA3 #6) by Karl Kopinski
+  scryfallId: 695caaa5-f060-48e2-a430-a21704635aa4
+  expansion:  M15
+  number:     172
+
+- # Eidolon of Blossoms (EA3 #5) by Min Yum
+  scryfallId: 8836abc9-e110-4ad5-be5d-183be28c6353
+  expansion:  JOU
+  number:     122
+
+- # Worldspine Wurm (EA3 #7) by Richard Wright
+  scryfallId: 4a285803-c1a0-4f2c-bbf5-cc9ae31f872e
+  expansion:  RTR
+  number:     140
+
+- # Judge's Familiar (EA3 #8) by Jack Wang
+  scryfallId: efedde4e-40c2-472d-9e0b-9f3c26ea5571
+  expansion:  RTR
+  number:     218
+
+- # Prairie Stream (EA3 #24) by Adam Paquette
+  scryfallId: 32be189f-7b13-4f7c-88d0-6594bda25551
+  expansion:  BFZ
+  number:     241
+
+- # Orzhov Charm (EA3 #13) by Zoltan Boros
+  scryfallId: 049847cb-ab85-48bd-8a8a-795a713fd5e6
+  expansion:  GTC
+  number:     185
+
+- # Obzedat, Ghost Council (EA3 #16) by Svetlin Velinov
+  scryfallId: 11b8f8f8-d24f-4ea5-b6b7-ad257fb03fc1
+  expansion:  GTC
+  number:     182
+
+- # Sunken Hollow (EA3 #23) by Adam Paquette
+  scryfallId: 568ed961-3387-403e-b217-c8ac6678e6d9
+  expansion:  BFZ
+  number:     249
+
+- # Izzet Charm (EA3 #11) by Zoltan Boros
+  scryfallId: ae116b37-1256-4764-8bd2-5e27ec4abe8a
+  expansion:  RTR
+  number:     172
+
+- # Smoldering Marsh (EA3 #22) by Adam Paquette
+  scryfallId: e3e0fd0b-312b-406c-982a-4effacd4b65b
+  expansion:  BFZ
+  number:     247
+
+- # Deathrite Shaman (EA3 #15) by Steve Argyle
+  scryfallId: 2071ed5f-7a50-4b02-b6a4-f5c781ef9212
+  expansion:  RTR
+  number:     213
+
+- # Golgari Charm (EA3 #9) by Zoltan Boros
+  scryfallId: 51d41d30-987b-4401-b6f6-cd1571d0959b
+  expansion:  RTR
+  number:     164
+
+- # Gruul Charm (EA3 #12) by Zoltan Boros
+  scryfallId: b8d142ad-6d84-4892-8d6e-5c957d02a23c
+  expansion:  GTC
+  number:     169
+
+- # Xenagos, God of Revels (EA3 #18) by Jason Chan
+  scryfallId: 5d7f8ef3-212b-4671-8489-e24f1659450b
+  expansion:  BNG
+  number:     156
+
+- # Omnath, Locus of Rage (EA3 #17) by Brad Rigney
+  scryfallId: 7e3fed02-d09b-4bd6-a3d9-048a8df48f66
+  expansion:  BFZ
+  number:     217
+
+- # Cinder Glade (EA3 #21) by Adam Paquette
+  scryfallId: 801133a6-513f-410e-84cd-a2d01e177fda
+  expansion:  BFZ
+  number:     235
+
+- # Voice of Resurgence (EA3 #14) by Winona Nelson
+  scryfallId: 5ace0449-74a0-476b-8215-af18040d47e9
+  expansion:  DGM
+  number:     114
+
+- # Canopy Vista (EA3 #20) by Adam Paquette
+  scryfallId: 091556d0-c8d3-44a9-9aee-1be624832bd3
+  expansion:  BFZ
+  number:     234
+
+- # Simic Charm (EA3 #10) by Zoltan Boros
+  scryfallId: 0fc5df7c-6620-4a37-8869-e5d6bc42374d
+  expansion:  GTC
+  number:     195
+
+- # Accorder's Shield (EA3 #19) by Alan Pollack
+  scryfallId: 3b06e292-43ef-4def-b6a6-9b7816cc8599
+  expansion:  M14
+  number:     204
+
+- # Thespian's Stage (EA3 #25) by John Avon
+  scryfallId: cc67fd50-e74b-4277-8266-740170154dcd
+  expansion:  GTC
+  number:     248
