@@ -293,6 +293,10 @@ public final class RyansMtgaDecks {
                 .withPreferenceOrder().override(Comparator.comparing(c -> !c.getEdition().getExpansion().isNamed("Strixhaven Mystical Archive")))
                 .withPreferenceOrder().override(preferArenaEntries(ETERNAL_FAVORITES, UNF_ORBITAL, MODERN_HORIZONS_SNOW_LANDS))
                 .addDeckTransformation(deck -> CompanionLegality.addMissingCompanion(spoiler, deck, c -> true, Function.identity())));
+        generate(spoiler, rootDirectory.resolve("Timeless"), builder -> builder
+                .withPreferenceOrder().override(Comparator.comparing(c -> !c.getEdition().getExpansion().isNamed("Strixhaven Mystical Archive")))
+                .withPreferenceOrder().override(preferArenaEntries(ETERNAL_FAVORITES, M21_SHOWCASE_LANDS, MODERN_HORIZONS_SNOW_LANDS))
+                .addDeckTransformation(deck -> CompanionLegality.addMissingCompanion(spoiler, deck, c -> true, Function.identity())));
         generate(spoiler, rootDirectory.resolve("Historic Brawl"), builder -> builder
                 .addDeckTransformation(toAlchemy)
                 .withPreferenceOrder().override(Comparator.comparing(c -> !c.getEdition().getExpansion().isNamed("Strixhaven Mystical Archive")))

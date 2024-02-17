@@ -56,6 +56,7 @@ public final class ArenaCard implements CardVersion, Comparable<ArenaCard> {
             .put("YBRO", "Y23")
             .put("YONE", "Y23")
             .put("YMOM", "Y23")
+            .put("YLCI", "Y24")
             .build();
     private static final Pattern STANDARD_ALCHEMY_SET_CODE = Pattern.compile("Y(\\w{3})"); // TODO: Use me
 
@@ -104,7 +105,7 @@ public final class ArenaCard implements CardVersion, Comparable<ArenaCard> {
         Word<ExpansionType> expansionType = expansion.getType();
         boolean isStandardEdition = ExpansionType.isStandardRelease(expansionType) || expansionType.is(ExpansionType.ALCHEMY)
                 || expansionType.is(ExpansionType.MASTERPIECE) && !expansion.isNamed("ZNE");
-        boolean isDuringArena = expansion.getReleaseDate().compareTo(ARENA_CARD_THRESHOLD) >= 0;
+        boolean isDuringArena = !expansion.getReleaseDate().isBefore(ARENA_CARD_THRESHOLD) || expansion.isNamed("KTK");
         boolean isBaseEdition = isBaseEdition(edition);
         boolean isBundleEdition = edition.getPromoTypes().contains(PromoType.BUNDLE);
 
