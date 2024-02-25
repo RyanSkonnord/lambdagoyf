@@ -48,10 +48,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static io.github.ryanskonnord.lambdagoyf.card.CardNames.normalize;
 
 public final class Spoiler {
 
@@ -135,7 +135,7 @@ public final class Spoiler {
 
         SetMultimap<String, Card> byPrintedName = MultimapBuilder.hashKeys(8 * cards.size()).hashSetValues(2).build();
         for (Card card : uniquelyNamedCards) {
-            Iterable<String> printedNames = () -> card.getAllNames().map(Spoiler::normalize).iterator();
+            Iterable<String> printedNames = () -> card.getAllNames().map(CardNames::normalize).iterator();
             for (String printedName : printedNames) {
                 if (!names.containsKey(printedName)) {
                     byPrintedName.put(printedName, card);
@@ -173,20 +173,6 @@ public final class Spoiler {
         return ImmutableBiMap.copyOf(map);
     }
 
-    private static final ImmutableMap<Character, String> LATIN_CHARACTERS = ImmutableSetMultimap
-            .<String, Character>builder()
-            .putAll("a", '\u00e0', '\u00e1', '\u00e2', '\u00e3', '\u00e4', '\u00e5')
-            .putAll("ae", '\u00e6')
-            .putAll("c", '\u00e7')
-            .putAll("e", '\u00e8', '\u00e9', '\u00ea', '\u00eb')
-            .putAll("i", '\u00ec', '\u00ed', '\u00ee', '\u00ef')
-            .putAll("n", '\u00f1')
-            .putAll("o", '\u00f2', '\u00f3', '\u00f4', '\u00f5', '\u00f6')
-            .putAll("u", '\u00f9', '\u00fa', '\u00fb', '\u00fc')
-            .build().entries().stream()
-            .collect(MapCollectors.<Map.Entry<String, Character>>collecting()
-                    .withKey(Map.Entry::getValue).withValue(Map.Entry::getKey)
-                    .unique().toImmutableMap());
 
     private static ImmutableMap<String, Expansion> buildExpansionNameMap(Set<Expansion> expansions) {
         Map<String, Expansion> byName = new LinkedHashMap<>((int) (expansions.size() * 2.75));
@@ -226,20 +212,6 @@ public final class Spoiler {
         }
 
         return ImmutableMap.copyOf(byName);
-    }
-
-    private static final Pattern COMPOUND_NAME_PATTERN = Pattern.compile("(?<first>.*?)\\s*/+\\s*(?<second>.*?)");
-
-    static String normalize(String name) {
-        Matcher matcher = COMPOUND_NAME_PATTERN.matcher(name);
-        if (matcher.matches()) {
-            name = matcher.group("first") + " // " + matcher.group("second");
-        }
-        return name.toLowerCase().chars().mapToObj(i -> {
-            char c = (char) i;
-            String s = LATIN_CHARACTERS.get(c);
-            return s != null ? s : Character.toString(c);
-        }).collect(Collectors.joining());
     }
 
 

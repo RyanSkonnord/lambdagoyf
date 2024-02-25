@@ -70,7 +70,7 @@ public final class LocalizedSpoiler {
                     for (CardEditionFace face : edition.getFaces()) {
                         Optional<String> printedName = face.getPrintedName();
                         if (printedName.isPresent()) {
-                            String name = Spoiler.normalize(printedName.get());
+                            String name = CardNames.normalize(printedName.get());
 
                             if (collidingNames.containsKey(name)) {
                                 collidingNames.put(name, card);
@@ -101,7 +101,7 @@ public final class LocalizedSpoiler {
     }
 
     public Optional<Card> lookUpByUniqueLocalizedName(String name) {
-        return Optional.ofNullable(byName.get(Spoiler.normalize(name)));
+        return Optional.ofNullable(byName.get(CardNames.normalize(name)));
     }
 
     public ImmutableSet<Card> lookUpByLocalizedName(String name) {
