@@ -119,14 +119,18 @@ public final class ArenaCard implements CardVersion, Comparable<ArenaCard> {
         return edition.getLanguage().isOneOf(Language.ENGLISH, Language.PHYREXIAN);
     }
 
+    private static ArenaVersionId buildVersionId(CardEdition parent) {
+        String expansionCode = toArenaCode(parent.getExpansion().getProductCode());
+        int collectorNumber = parent.getCollectorNumber().getNumber();
+        return new ArenaVersionId(expansionCode, collectorNumber);
+    }
 
     private final CardEdition parent;
     private final OptionalLong arenaId;
     private final ArenaVersionId versionId;
 
     ArenaCard(CardEdition parent, OptionalLong arenaId) {
-        this(parent, arenaId,
-                new ArenaVersionId(parent.getExpansion().getProductCode(), parent.getCollectorNumber().getNumber()));
+        this(parent, arenaId, buildVersionId(parent));
     }
 
     ArenaCard(CardEdition parent, OptionalLong arenaId, ArenaVersionId versionId) {

@@ -54,16 +54,19 @@ public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
         this.version = Optional.of(version);
     }
 
-    private static final Pattern ENTRY_PATTERN = Pattern.compile("(?<name>.*?)\\s+\\((?<expansionCode>\\w+?)\\)\\s+(?<number>\\d+)\\s*");
+    private static final Pattern ENTRY_PATTERN = Pattern.compile("(?<name>.*?)(\\s+\\((?<expansionCode>\\w+?)\\)\\s+(?<number>\\d+))?\\s*");
     private static final Pattern LINE_PATTERN = Pattern.compile("(?<count>\\d+)\\s+" + ENTRY_PATTERN);
 
     public static Optional<ArenaDeckEntry> parse(String entry) {
         Matcher matcher = ENTRY_PATTERN.matcher(entry);
         if (!matcher.matches()) return Optional.empty();
-        return Optional.of(new ArenaDeckEntry(
-                matcher.group("name"),
-                matcher.group("expansionCode"),
-                Integer.parseInt(matcher.group("number"))));
+
+        String name = matcher.group("name");
+        String expansionCode = matcher.group("expansionCode");
+        String number = matcher.group("number");
+        return expansionCode == null && number == null
+                ? Optional.of(new ArenaDeckEntry(name))
+                : Optional.of(new ArenaDeckEntry(name, expansionCode, Integer.parseInt(number)));
     }
 
     public String getCardName() {
@@ -81,7 +84,7 @@ public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
 
     @Override
     public String toString() {
-        return version.map(v -> cardName + " " + v).orElse(cardName);
+        return versionId.map(v -> cardName + " " + v).orElse(cardName);
     }
 
     @Override
