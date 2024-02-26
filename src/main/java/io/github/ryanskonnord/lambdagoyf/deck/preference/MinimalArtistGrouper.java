@@ -176,7 +176,8 @@ public class MinimalArtistGrouper<C extends CardVersion> {
                 List<Predicate<C>> shuffledPredicates = category.shuffle(seeds[i]);
                 builder.addAll(shuffledPredicates);
             }
-            return builder.build().apply(deck);
+            BasicLandPreferenceSequence<C> build = builder.build();
+            return build.apply(deck);
         };
     }
 

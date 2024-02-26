@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -47,39 +48,66 @@ public final class OrderingUtil {
         return OrderingUtil.<T>trueFirst(predicate).reversed();
     }
 
-    public static interface OptionalOrdering<T> {
-        Comparator<Optional<T>> emptyFirst();
+    public static class OptionalComparator<T, U> implements Comparator<T> {
+        private final Function<? super T, Optional<U>> keyExtractor;
+        private final Comparator<? super U> keyComparator;
+        private final Comparator<? super T> emptyKeyComparator;
+        private final boolean emptyFirst;
 
-        Comparator<Optional<T>> emptyLast();
-    }
+        public static final class Builder<T, U> {
+            private final Function<? super T, Optional<U>> keyExtractor;
+            private final Comparator<? super U> keyComparator;
+            private Comparator<T> emptyKeyComparator = null;
 
-    public static <T> OptionalOrdering<T> compareOptional(Comparator<? super T> comparator) {
-        Objects.requireNonNull(comparator);
-        return new OptionalOrdering<T>() {
-            private Comparator<Optional<T>> createComparator(int direction) {
-                return (Optional<T> o1, Optional<T> o2) -> o1.isPresent()
-                        ? (o2.isPresent() ? comparator.compare(o1.get(), o2.get()) : direction)
-                        : (o2.isPresent() ? -direction : 0);
+            private Builder(Function<? super T, Optional<U>> keyExtractor, Comparator<? super U> keyComparator) {
+                this.keyExtractor = Objects.requireNonNull(keyExtractor);
+                this.keyComparator = Objects.requireNonNull(keyComparator);
             }
 
-            @Override
-            public Comparator<Optional<T>> emptyFirst() {
-                return createComparator(1);
+            public Builder<T, U> compareIfKeysAreEmpty(Comparator<? super T> emptyKeyComparator) {
+                this.emptyKeyComparator = (this.emptyKeyComparator == null) ? emptyKeyComparator::compare
+                        : this.emptyKeyComparator.thenComparing(emptyKeyComparator);
+                return this;
             }
 
-            @Override
-            public Comparator<Optional<T>> emptyLast() {
-                return createComparator(-1);
+            public OptionalComparator<T, U> emptyKeysFirst() {
+                return new OptionalComparator<>(this, true);
             }
-        };
-    }
 
-    public static <T extends Comparable<T>> Comparator<Optional<T>> emptyFirst() {
-        return OrderingUtil.<T>compareOptional(Comparator.naturalOrder()).emptyFirst();
-    }
+            public OptionalComparator<T, U> emptyKeysLast() {
+                return new OptionalComparator<>(this, false);
+            }
+        }
 
-    public static <T extends Comparable<T>> Comparator<Optional<T>> emptyLast() {
-        return OrderingUtil.<T>compareOptional(Comparator.naturalOrder()).emptyLast();
+        public static <T, U> Builder<T, U> build(Function<? super T, Optional<U>> keyExtractor, Comparator<? super U> keyComparator) {
+            return new Builder<>(keyExtractor, keyComparator);
+        }
+
+        private OptionalComparator(Builder<T, U> builder, boolean emptyFirst) {
+            this.keyExtractor = builder.keyExtractor;
+            this.keyComparator = builder.keyComparator;
+            this.emptyKeyComparator = builder.emptyKeyComparator;
+            this.emptyFirst = emptyFirst;
+        }
+
+        @Override
+        public int compare(T t1, T t2) {
+            Optional<? extends U> o1 = keyExtractor.apply(t1);
+            Optional<? extends U> o2 = keyExtractor.apply(t2);
+            if (o1.isPresent()) {
+                if (o2.isPresent()) {
+                    return keyComparator.compare(o1.get(), o2.get());
+                } else {
+                    return emptyFirst ? 1 : -1;
+                }
+            } else if (o2.isPresent()) {
+                return emptyFirst ? -1 : 1;
+            } else if (emptyKeyComparator != null) {
+                return emptyKeyComparator.compare(t1, t2);
+            } else {
+                return 0;
+            }
+        }
     }
 
     public static <T extends Comparable<T>> int compareLexicographically(Iterable<? extends T> o1,

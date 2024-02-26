@@ -21,7 +21,6 @@ package io.github.ryanskonnord.lambdagoyf.deck;
 
 import com.google.common.base.Preconditions;
 import io.github.ryanskonnord.lambdagoyf.card.ArenaCard;
-import io.github.ryanskonnord.lambdagoyf.card.CardEdition;
 import io.github.ryanskonnord.lambdagoyf.card.DeckElement;
 
 import java.util.Objects;
@@ -31,57 +30,28 @@ import java.util.regex.Pattern;
 
 public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
 
-    public static final class EditionId {
-        private final String expansionCode;
-        private final int collectorNumber;
-
-        private EditionId(String expansionCode, int collectorNumber) {
-            Preconditions.checkArgument(collectorNumber > 0);
-            this.expansionCode = Objects.requireNonNull(expansionCode);
-            this.collectorNumber = collectorNumber;
-        }
-
-        public String getExpansionCode() {
-            return expansionCode;
-        }
-
-        public int getCollectorNumber() {
-            return collectorNumber;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("(%s) %d", expansionCode, collectorNumber);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return this == o || o != null && getClass() == o.getClass()
-                    && collectorNumber == ((EditionId) o).collectorNumber
-                    && expansionCode.equals(((EditionId) o).expansionCode);
-        }
-
-        @Override
-        public int hashCode() {
-            return 31 * expansionCode.hashCode() + collectorNumber;
-        }
-    }
 
     private final String cardName;
-    private final Optional<EditionId> editionId;
+    private final Optional<ArenaVersionId> versionId;
     private final Optional<ArenaCard> version;
 
     public ArenaDeckEntry(String cardName) {
         this.cardName = Objects.requireNonNull(cardName);
-        this.editionId = Optional.empty();
+        this.versionId = Optional.empty();
         this.version = Optional.empty();
     }
 
     public ArenaDeckEntry(String cardName, String expansionCode, int collectorNumber) {
         Preconditions.checkArgument(collectorNumber >= 0);
         this.cardName = Objects.requireNonNull(cardName);
-        this.editionId = Optional.of(new EditionId(expansionCode, collectorNumber));
+        this.versionId = Optional.of(new ArenaVersionId(expansionCode, collectorNumber));
         this.version = Optional.empty();
+    }
+
+    public ArenaDeckEntry(ArenaCard version) {
+        this.cardName = version.getCardNameInArenaFormat();
+        this.versionId = Optional.of(version.getVersionId());
+        this.version = Optional.of(version);
     }
 
     private static final Pattern ENTRY_PATTERN = Pattern.compile("(?<name>.*?)\\s+\\((?<expansionCode>\\w+?)\\)\\s+(?<number>\\d+)\\s*");
@@ -100,8 +70,8 @@ public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
         return cardName;
     }
 
-    public Optional<EditionId> getEditionId() {
-        return editionId;
+    public Optional<ArenaVersionId> getVersionId() {
+        return versionId;
     }
 
     @Override

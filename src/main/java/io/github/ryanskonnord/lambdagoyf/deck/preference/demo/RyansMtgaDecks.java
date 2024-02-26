@@ -33,13 +33,13 @@ import com.google.common.collect.Multiset;
 import io.github.ryanskonnord.lambdagoyf.Environment;
 import io.github.ryanskonnord.lambdagoyf.card.AlchemyConverter;
 import io.github.ryanskonnord.lambdagoyf.card.ArenaCard;
-import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckEntry;
 import io.github.ryanskonnord.lambdagoyf.card.Card;
 import io.github.ryanskonnord.lambdagoyf.card.CardEdition;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersion;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersionExtractor;
 import io.github.ryanskonnord.lambdagoyf.card.CollectorNumber;
 import io.github.ryanskonnord.lambdagoyf.card.Color;
+import io.github.ryanskonnord.lambdagoyf.card.DeckElement;
 import io.github.ryanskonnord.lambdagoyf.card.Expansion;
 import io.github.ryanskonnord.lambdagoyf.card.FinishedCardVersion;
 import io.github.ryanskonnord.lambdagoyf.card.Spoiler;
@@ -47,6 +47,7 @@ import io.github.ryanskonnord.lambdagoyf.card.field.CardSupertype;
 import io.github.ryanskonnord.lambdagoyf.card.field.ExpansionType;
 import io.github.ryanskonnord.lambdagoyf.card.field.Finish;
 import io.github.ryanskonnord.lambdagoyf.card.field.Rarity;
+import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckEntry;
 import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckFormatter;
 import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckSeeker;
 import io.github.ryanskonnord.lambdagoyf.deck.CommanderLegality;
@@ -231,7 +232,7 @@ public final class RyansMtgaDecks {
             return false;
         }
         Expansion expansion = edition.getExpansion();
-        return expansion.getReleaseDate().compareTo(LocalDate.parse(date)) >= 0
+        return !expansion.getReleaseDate().isBefore(LocalDate.parse(date))
                 && expansion.getType().getEnum().filter(ExpansionType::isStandardRelease).isPresent();
     }
 
@@ -271,10 +272,15 @@ public final class RyansMtgaDecks {
                 .defaultToAnyArtist()
                 .getModifier();
 
-        generate(spoiler, rootDirectory.resolve("Standard"), builder -> builder
-                        .addDeckTransformation(fromAlchemy)
-                        .withPreferenceOrder().override(Comparator.comparing((CardVersion version) -> isSubrareAfter(version, "2021-09-24")).reversed())
-                        .withPreferenceOrder().override(preferArenaEntries(DMU_STAINED_GLASS_LANDS))
+        generate(spoiler, rootDirectory.resolve("Standard"), new Consumer<DeckConstructor.Builder<ArenaCard, ArenaDeckEntry>>() {
+                    @Override
+                    public void accept(DeckConstructor.Builder<ArenaCard, ArenaDeckEntry> builder) {
+                        builder
+                                .addDeckTransformation(fromAlchemy)
+                                .withPreferenceOrder().override(Comparator.comparing((CardVersion version) -> isSubrareAfter(version, "2021-09-24")).reversed())
+                                .withPreferenceOrder().override(preferArenaEntries(DMU_STAINED_GLASS_LANDS));
+                    }
+                }
 //                .addVersionTransformation(broGroups)
         );
         generate(spoiler, rootDirectory.resolve("Explorer"), builder -> builder
@@ -302,20 +308,25 @@ public final class RyansMtgaDecks {
                 .withPreferenceOrder().override(Comparator.comparing(c -> !c.getEdition().getExpansion().isNamed("Strixhaven Mystical Archive")))
                 .withPreferenceOrder().override(preferArenaEntries(ETERNAL_FAVORITES, UNHINGED_LANDS, MODERN_HORIZONS_SNOW_LANDS))
                 .addDeckTransformation(CommanderLegality::inferCommander)
-                .addVersionTransformation(useBasicLandsMatchingCommander(CardVersionExtractor.getArenaCard(), c -> c.getEdition().isFullArt())));
+                .addOutputTransformation(useBasicLandsMatchingCommander(CardVersionExtractor.getArenaCard(), ArenaDeckEntry::new, c -> c.getEdition().isFullArt())));
     }
 
-    private static <V extends CardVersion> UnaryOperator<Deck<V>> useBasicLandsMatchingCommander(CardVersionExtractor<V> extractor, Predicate<V> preference) {
+    private static <V extends CardVersion, T extends DeckElement<V>> UnaryOperator<Deck<T>> useBasicLandsMatchingCommander(
+            CardVersionExtractor<V> extractor,
+            Function<V, T> outputCtor,
+            Predicate<V> preference) {
         Objects.requireNonNull(extractor);
-        return (Deck<V> deck) -> {
+        return (Deck<T> deck) -> {
             Set<Expansion> commanderExpansions = deck.get(Deck.Section.COMMANDER).stream()
-                    .map(c -> c.getEdition().getExpansion())
+                    .flatMap(c -> c.getVersion().map(v -> v.getEdition().getExpansion()).stream())
                     .collect(Collectors.toSet());
             if (commanderExpansions.size() != 1) return deck;
             Expansion expansion = Iterables.getOnlyElement(commanderExpansions);
-            DeckRandomChoice shuffler = DeckRandomChoice.withSalt(0xb2c39c0f5cc4954aL).forDeck(deck);
-            return deck.transformCards((Multiset.Entry<V> entry) -> {
-                Card card = entry.getElement().getCard();
+            DeckRandomChoice shuffler = DeckRandomChoice.withSalt(0xb2c39c0f5cc4954aL).forDeck(deck.flatTransform(DeckElement::getVersion));
+            return deck.transformCards((Multiset.Entry<T> entry) -> {
+                Optional<V> version = entry.getElement().getVersion();
+                if (version.isEmpty()) return null;
+                Card card = version.get().getCard();
                 if (!card.getMainTypeLine().is(CardSupertype.BASIC)) return null;
                 List<V> versions = extractor.fromCard(card).filter(e -> e.getEdition().getExpansion().equals(expansion))
                         .collect(Collectors.toCollection(ArrayList::new));
@@ -328,7 +339,7 @@ public final class RyansMtgaDecks {
                 }
                 if (versions.isEmpty()) return null;
                 versions = shuffler.forCard(card).shuffle(versions);
-                return evenDistribution(entry.getCount(), versions);
+                return evenDistribution(entry.getCount(), versions.stream().map(outputCtor).collect(Collectors.toList()));
             });
         };
     }
@@ -425,15 +436,15 @@ public final class RyansMtgaDecks {
     }
 
     private static void generate(Spoiler spoiler, Path sourceDirectory,
-                                 Consumer<DeckConstructor.Builder<ArenaCard>> modifier)
+                                 Consumer<DeckConstructor.Builder<ArenaCard, ArenaDeckEntry>> modifier)
             throws IOException {
-        DeckConstructor.Builder<ArenaCard> builder = DeckConstructor.createForArena()
+        DeckConstructor.Builder<ArenaCard, ArenaDeckEntry> builder = DeckConstructor.createForArena()
                 .withPreferenceOrder().override(Comparator.comparing((ArenaCard arenaCard) -> arenaCard.getEdition().getReleaseDate()))
                 .addDeckTransformation(CompanionLegality::extractCompanion);
         modifier.accept(builder);
         builder.withPreferenceOrder().override(Comparator.comparing((ArenaCard arenaCard) ->
                 arenaCard.getEdition().getExpansion().isNamed("PANA")));
-        DeckConstructor<ArenaCard> deckConstructor = builder.build();
+        DeckConstructor<ArenaCard, ArenaDeckEntry> deckConstructor = builder.build();
 
         Path destinationDirectory = sourceDirectory.resolve("Arena");
         Files.createDirectories(destinationDirectory);
@@ -451,7 +462,7 @@ public final class RyansMtgaDecks {
             try {
                 Optional<Deck<Card>> deck = readDeck(spoiler, source);
                 if (deck.isPresent()) {
-                    Deck<ArenaCard> arenaDeck = deckConstructor.createDeck(deck.get());
+                    Deck<ArenaDeckEntry> arenaDeck = deckConstructor.createDeck(deck.get());
                     arenaDeck = arenaDeck.sortCards(ArenaDeckFormatter.orderArenaCards());
                     arenaDeck = ArenaDeckFormatter.prioritizeBestOfOneSideboard(arenaDeck);
                     try (Writer writer = Files.newBufferedWriter(destination)) {
@@ -475,7 +486,7 @@ public final class RyansMtgaDecks {
                 })
                 .collect(ImmutableMultiset.toImmutableMultiset(Function.identity(), e -> count));
         Deck<ArenaCard> deck = new Deck.Builder<ArenaCard>().addTo(Deck.Section.MAIN_DECK, cards).build();
-        ArenaDeckFormatter.write(destination, deck);
+        ArenaDeckFormatter.write(destination, deck.transform(ArenaCard::getDeckEntry));
     }
 
 }

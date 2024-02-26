@@ -32,6 +32,7 @@ import io.github.ryanskonnord.lambdagoyf.card.FinishedCardVersion;
 import io.github.ryanskonnord.lambdagoyf.card.MtgoCard;
 import io.github.ryanskonnord.lambdagoyf.card.field.ExpansionType;
 import io.github.ryanskonnord.util.ComparatorMutator;
+import io.github.ryanskonnord.util.OrderingUtil;
 
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -167,7 +168,8 @@ public final class DeckConstructor<V extends CardVersion, T extends DeckElement<
                         .getType().getEnum().filter(ExpansionType::isStandardRelease).isEmpty())
                 .thenComparing(Comparator.comparing(ArenaCard::getEdition).reversed());
         return new Builder<>(CardVersionExtractor.getArenaCard(), ArenaCard::getDeckEntry)
-                .withPreferenceOrder().set(defaultOrder);
+                .withPreferenceOrder().set(defaultOrder)
+                .withFallback(card -> Stream.of(new ArenaDeckEntry(card.getMainName())));
     }
 
 
@@ -185,7 +187,7 @@ public final class DeckConstructor<V extends CardVersion, T extends DeckElement<
     }
 
     private Comparator<T> comparingVersions(Comparator<V> versionComparator) {
-        return Comparator.nullsLast(Comparator.comparing(t -> t.getVersion().orElse(null), versionComparator));
+        return OrderingUtil.OptionalComparator.<T, V>build(DeckElement::getVersion, versionComparator).emptyKeysLast();
     }
 
     private static final ImmutableSet<Deck.Section> DECK_SECTIONS = Sets.immutableEnumSet(EnumSet.allOf(Deck.Section.class));

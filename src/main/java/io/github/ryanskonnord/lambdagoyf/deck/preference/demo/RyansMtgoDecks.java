@@ -39,6 +39,7 @@ import io.github.ryanskonnord.lambdagoyf.card.CardNames;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersion;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersionExtractor;
 import io.github.ryanskonnord.lambdagoyf.card.Color;
+import io.github.ryanskonnord.lambdagoyf.card.DeckElement;
 import io.github.ryanskonnord.lambdagoyf.card.Expansion;
 import io.github.ryanskonnord.lambdagoyf.card.MtgoCard;
 import io.github.ryanskonnord.lambdagoyf.card.Spoiler;
@@ -464,7 +465,7 @@ public final class RyansMtgoDecks {
         Objects.requireNonNull(collectionAvailability);
         return (Deck<MtgoDeck.CardEntry> deck) -> {
             DeckRandomChoice choice = DeckRandomChoice.withSalt(0x5b114dfa7866f512L)
-                    .forDeck(deck.flatTransform(MtgoDeck.CardEntry::getVersion));
+                    .forDeck(deck.flatTransform(DeckElement::getVersion));
             return deck.transformCards((Multiset.Entry<MtgoDeck.CardEntry> entry) -> {
                 int count = entry.getCount();
                 MtgoDeck.CardEntry element = entry.getElement();

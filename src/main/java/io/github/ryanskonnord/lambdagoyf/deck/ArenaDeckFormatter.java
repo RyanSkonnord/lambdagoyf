@@ -27,10 +27,10 @@ import com.google.common.collect.Multisets;
 import io.github.ryanskonnord.lambdagoyf.card.ArenaCard;
 import io.github.ryanskonnord.lambdagoyf.card.Card;
 import io.github.ryanskonnord.lambdagoyf.card.CardEdition;
-import io.github.ryanskonnord.lambdagoyf.card.CardIdentity;
 import io.github.ryanskonnord.lambdagoyf.card.ColorSet;
 import io.github.ryanskonnord.lambdagoyf.card.Spoiler;
 import io.github.ryanskonnord.lambdagoyf.card.field.CardType;
+import io.github.ryanskonnord.util.OrderingUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -71,39 +71,37 @@ public final class ArenaDeckFormatter {
                             .thenComparing(Card::getMainName))
             .thenComparing(Comparator.naturalOrder());
 
-    public static Comparator<ArenaCard> orderArenaCards() {
-        return Comparator.comparing((ArenaCard c) -> c.getEdition().getCard(), ARENA_DECK_BUILDER_ORDER)
+    public static Comparator<ArenaDeckEntry> orderArenaCards() {
+        Comparator<ArenaCard> arenaCardOrder = Comparator.comparing((ArenaCard c) -> c.getEdition().getCard(), ARENA_DECK_BUILDER_ORDER)
                 .thenComparing(Comparator.naturalOrder());
+        return OrderingUtil.OptionalComparator.build(ArenaDeckEntry::getVersion, arenaCardOrder).emptyKeysLast();
     }
 
-    private static boolean isSignificantFromSideboard(CardIdentity cardIdentity) {
-        Card card = cardIdentity.getCard();
+    private static boolean isSignificantFromSideboard(Card card) {
         if (card.getMainTypeLine().isSubtype("Lesson")) return true;
         String legionAngelText = "named " + card.getMainName() + " from outside the game";
         return card.getFaces().stream().anyMatch(face -> face.getOracleText().contains(legionAngelText));
     }
 
-    public static <C extends CardIdentity> Deck<C> prioritizeBestOfOneSideboard(Deck<C> deck) {
-        Multiset<C> oldSideboard = deck.get(Deck.Section.SIDEBOARD);
-        Predicate<C> significance = ArenaDeckFormatter::isSignificantFromSideboard;
-
+    public static Deck<ArenaDeckEntry> prioritizeBestOfOneSideboard(Deck<ArenaDeckEntry> deck) {
         boolean hasGrizzledHuntmaster = deck.get(Deck.Section.MAIN_DECK).elementSet().stream()
-                .anyMatch(c -> c.getCard().getMainName().equals("Grizzled Huntmaster"));
-        if (hasGrizzledHuntmaster) {
-            significance = significance.or(c -> c.getCard().getMainTypeLine().is(CardType.CREATURE));
-        }
+                .anyMatch(e -> e.getCardName().equals("Grizzled Huntmaster"));
+        Predicate<Card> significance = ((Predicate<Card>) ArenaDeckFormatter::isSignificantFromSideboard)
+                .or(c -> hasGrizzledHuntmaster && c.getMainTypeLine().is(CardType.CREATURE));
 
-        Multiset<C> significantFromSideboard = Multisets.filter(oldSideboard, significance::test);
+        Multiset<ArenaDeckEntry> oldSideboard = deck.get(Deck.Section.SIDEBOARD);
+        Multiset<ArenaDeckEntry> significantFromSideboard = Multisets.filter(oldSideboard,
+                e -> e.getVersion().filter(v -> significance.test(v.getCard())).isPresent());
         int size = significantFromSideboard.size();
         int bo1Capacity = BO1_SIDEBOARD_SIZE - deck.get(Deck.Section.COMPANION).size();
         if (size != 0 && size <= bo1Capacity && size != oldSideboard.size()) {
-            Set<C> significantCards = ImmutableSet.copyOf(significantFromSideboard.elementSet());
+            Set<ArenaDeckEntry> significantCards = ImmutableSet.copyOf(significantFromSideboard.elementSet());
             return changeSideboardOrder(deck, Comparator.comparing(e -> !significantCards.contains(e.getElement())));
         }
         return deck;
     }
 
-    private static <C extends CardIdentity> Deck<C> changeSideboardOrder(Deck<C> deck, Comparator<Multiset.Entry<C>> priority) {
+    private static <C> Deck<C> changeSideboardOrder(Deck<C> deck, Comparator<Multiset.Entry<C>> priority) {
         Deck.Builder<C> mutableCopy = deck.createMutableCopy();
         Multiset<C> newSideboard = mutableCopy.get(Deck.Section.SIDEBOARD);
         newSideboard.clear();
@@ -116,19 +114,19 @@ public final class ArenaDeckFormatter {
     private static final int BO1_SIDEBOARD_SIZE = 7;
 
 
-    private static void writePart(PrintWriter printWriter, Multiset<ArenaCard> part) {
-        for (Multiset.Entry<ArenaCard> entry : part.entrySet()) {
+    private static void writePart(PrintWriter printWriter, Multiset<ArenaDeckEntry> part) {
+        for (Multiset.Entry<ArenaDeckEntry> entry : part.entrySet()) {
             printWriter.print(entry.getCount());
             printWriter.print(' ');
-            printWriter.println(entry.getElement().getDeckEntry());
+            printWriter.println(entry.getElement());
         }
     }
 
-    public static void write(Writer writer, Deck<ArenaCard> deck) {
+    public static void write(Writer writer, Deck<ArenaDeckEntry> deck) {
         PrintWriter printWriter = new PrintWriter(writer);
-        Iterator<Map.Entry<Deck.Section, ImmutableMultiset<ArenaCard>>> sectionIterator = deck.getAllSections().iterator();
+        Iterator<Map.Entry<Deck.Section, ImmutableMultiset<ArenaDeckEntry>>> sectionIterator = deck.getAllSections().iterator();
         while (sectionIterator.hasNext()) {
-            Map.Entry<Deck.Section, ImmutableMultiset<ArenaCard>> entry = sectionIterator.next();
+            Map.Entry<Deck.Section, ImmutableMultiset<ArenaDeckEntry>> entry = sectionIterator.next();
             printWriter.println(entry.getKey().getLabel());
             writePart(printWriter, entry.getValue());
             if (sectionIterator.hasNext()) {

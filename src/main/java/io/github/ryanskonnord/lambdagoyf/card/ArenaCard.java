@@ -32,6 +32,7 @@ import io.github.ryanskonnord.lambdagoyf.card.field.FrameEffect;
 import io.github.ryanskonnord.lambdagoyf.card.field.Language;
 import io.github.ryanskonnord.lambdagoyf.card.field.PromoType;
 import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckEntry;
+import io.github.ryanskonnord.lambdagoyf.deck.ArenaVersionId;
 import io.github.ryanskonnord.util.MapCollectors;
 
 import java.time.LocalDate;
@@ -82,9 +83,9 @@ public final class ArenaCard implements CardVersion, Comparable<ArenaCard> {
 
         boolean isUnfinityLand = edition.getExpansion().isNamed("Unfinity") && Range.closed(235, 244).contains(edition.getCollectorNumber().getNumber());
         boolean isStandardArenaCard = isStandardArenaCard(edition, arenaId);
-        return isStandardArenaCard | isUnfinityLand
-                ? Optional.of(new ArenaCard(edition, arenaId, null))
-                : Optional.empty();
+        if (!(isStandardArenaCard | isUnfinityLand)) return Optional.empty();
+
+        return Optional.of(new ArenaCard(edition, arenaId));
     }
 
     private static final ImmutableSet<FrameEffect> EXCLUDED_FRAME_EFFECTS = Sets.immutableEnumSet(
@@ -121,26 +122,30 @@ public final class ArenaCard implements CardVersion, Comparable<ArenaCard> {
 
     private final CardEdition parent;
     private final OptionalLong arenaId;
-    private final Optional<ArenaIdFix.OverrideNumber> idFix;
+    private final ArenaVersionId versionId;
 
-    ArenaCard(CardEdition parent, OptionalLong arenaId, ArenaIdFix.OverrideNumber idFix) {
+    ArenaCard(CardEdition parent, OptionalLong arenaId) {
+        this(parent, arenaId,
+                new ArenaVersionId(parent.getExpansion().getProductCode(), parent.getCollectorNumber().getNumber()));
+    }
+
+    ArenaCard(CardEdition parent, OptionalLong arenaId, ArenaVersionId versionId) {
         this.parent = Objects.requireNonNull(parent);
         this.arenaId = Objects.requireNonNull(arenaId);
-        this.idFix = Optional.ofNullable(idFix);
+        this.versionId = Objects.requireNonNull(versionId);
     }
+
 
     @Override
     public CardEdition getEdition() {
         return parent;
     }
 
-    public OptionalLong getArenaId() {
-        return arenaId;
+    public ArenaVersionId getVersionId() {
+        return versionId;
     }
 
-    private transient ArenaDeckEntry deckEntry;
-
-    private String getCardName() {
+    public String getCardNameInArenaFormat() {
         Card card = parent.getCard();
         if (card.getLayout().is(CardLayout.SPLIT)) {
             List<CardFace> faces = card.getFaces();
@@ -153,34 +158,21 @@ public final class ArenaCard implements CardVersion, Comparable<ArenaCard> {
         return card.getMainName();
     }
 
+    private transient ArenaDeckEntry deckEntry;
+
     public ArenaDeckEntry getDeckEntry() {
-        if (deckEntry != null) return deckEntry;
-
-        String expansionCode;
-        int collectorNumber;
-        if (idFix.isPresent()) {
-            expansionCode = idFix.get().getExpansionCode();
-            collectorNumber = idFix.get().getCollectorNumber();
-        } else {
-            expansionCode = parent.getExpansion().getProductCode();
-            collectorNumber = parent.getCollectorNumber().getNumber();
-        }
-
-        expansionCode = toArenaCode(expansionCode);
-        return deckEntry = new ArenaDeckEntry(getCardName(), expansionCode, collectorNumber);
+        return (deckEntry != null) ? deckEntry : (deckEntry = new ArenaDeckEntry(this));
     }
 
-    public Optional<ArenaCard> fromDeckEntry(Spoiler spoiler, ArenaDeckEntry entry) {
-        Optional<ArenaDeckEntry.EditionId> editionId = entry.getEditionId();
-        if (editionId.isEmpty()) return Optional.empty();
-        String expansionCode = editionId.get().getExpansionCode();
+    public static Optional<ArenaCard> lookUp(Spoiler spoiler, String name, ArenaVersionId versionId) {
+        String expansionCode = versionId.getExpansionCode();
         Set<String> fixedCodes = REVERSE_ARENA_FIXES.get(expansionCode);
         Predicate<Expansion> expansionPredicate = fixedCodes.isEmpty()
                 ? expansion -> expansion.isNamed(expansionCode)
                 : expansion -> expansion.isNamed(expansionCode) || fixedCodes.stream().anyMatch(expansion::isNamed);
-        return spoiler.lookUpByName(entry.getCardName())
+        return spoiler.lookUpByName(name)
                 .flatMap(card -> card.getEditions().stream()
-                        .filter(edition -> editionId.get().getCollectorNumber() == edition.getCollectorNumber().getNumber()
+                        .filter(edition -> versionId.getCollectorNumber() == edition.getCollectorNumber().getNumber()
                                 && expansionPredicate.test(edition.getExpansion()))
                         .flatMap(edition -> edition.getArenaCard().stream())
                         .collect(MoreCollectors.toOptional()));
@@ -193,9 +185,8 @@ public final class ArenaCard implements CardVersion, Comparable<ArenaCard> {
 
     @Override
     public String toString() {
-        ArenaDeckEntry.EditionId editionId = getDeckEntry().getEditionId().orElseThrow(RuntimeException::new);
         return String.format("%s (%s %d; ID=%s)",
-                getCardName(), editionId.getExpansionCode(), editionId.getCollectorNumber(),
+                getCardNameInArenaFormat(), versionId.getExpansionCode(), versionId.getCollectorNumber(),
                 (arenaId.isPresent() ? Long.toString(arenaId.getAsLong()) : "null"));
     }
 

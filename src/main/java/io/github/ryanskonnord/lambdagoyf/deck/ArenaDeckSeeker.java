@@ -31,9 +31,9 @@ import java.util.stream.Stream;
 public final class ArenaDeckSeeker {
 
     private final Spoiler spoiler;
-    private final DeckConstructor<ArenaCard> deckConstructor;
+    private final DeckConstructor<ArenaCard, ArenaDeckEntry> deckConstructor;
 
-    public ArenaDeckSeeker(Spoiler spoiler, DeckConstructor<ArenaCard> deckConstructor) {
+    public ArenaDeckSeeker(Spoiler spoiler, DeckConstructor<ArenaCard, ArenaDeckEntry> deckConstructor) {
         this.spoiler = Objects.requireNonNull(spoiler);
         this.deckConstructor = Objects.requireNonNull(deckConstructor);
     }

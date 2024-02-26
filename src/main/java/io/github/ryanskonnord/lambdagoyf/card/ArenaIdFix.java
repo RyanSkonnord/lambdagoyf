@@ -22,13 +22,13 @@ package io.github.ryanskonnord.lambdagoyf.card;
 import au.com.bytecode.opencsv.CSVReader;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.github.ryanskonnord.lambdagoyf.Environment;
 import io.github.ryanskonnord.lambdagoyf.card.field.CardSupertype;
 import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckEntry;
 import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckFormatter;
+import io.github.ryanskonnord.lambdagoyf.deck.ArenaVersionId;
 import io.github.ryanskonnord.lambdagoyf.deck.Deck;
 import io.github.ryanskonnord.lambdagoyf.scryfall.ScryfallParser;
 import io.github.ryanskonnord.util.MapCollectors;
@@ -47,7 +47,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.TreeMap;
@@ -60,40 +59,29 @@ import static io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckFormatter.ARENA_CO
 
 public abstract class ArenaIdFix {
 
-    public static final class OverrideNumber extends ArenaIdFix {
-        private final String expansionCode;
-        private final int collectorNumber;
+    public static final class OverrideVersionId extends ArenaIdFix {
+        private final ArenaVersionId replacement;
 
-        private OverrideNumber(String expansionCode, int collectorNumber) {
-            Preconditions.checkArgument(collectorNumber >= 0);
-            this.expansionCode = Objects.requireNonNull(expansionCode);
-            this.collectorNumber = collectorNumber;
+        private OverrideVersionId(String expansionCode, int collectorNumber) {
+            this.replacement = new ArenaVersionId(expansionCode,collectorNumber);
         }
 
         @Override
         public Optional<ArenaCard> setUpArenaCard(CardEdition edition, OptionalLong arenaId) {
-            return Optional.of(new ArenaCard(edition, arenaId, this));
+            return Optional.of(new ArenaCard(edition, arenaId, replacement));
         }
 
         @Override
         protected void printAsYaml(PrintWriter printWriter) {
-            printWriter.println("  expansion:  " + getExpansionCode());
-            printWriter.println("  number:     " + getCollectorNumber());
-        }
-
-        public String getExpansionCode() {
-            return expansionCode;
-        }
-
-        public int getCollectorNumber() {
-            return collectorNumber;
+            printWriter.println("  expansion:  " + replacement.getExpansionCode());
+            printWriter.println("  number:     " + replacement.getCollectorNumber());
         }
 
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(this)
-                    .add("expansionCode", expansionCode)
-                    .add("collectorNumber", collectorNumber)
+                    .add("expansionCode", replacement.getExpansionCode())
+                    .add("collectorNumber", replacement.getCollectorNumber())
                     .toString();
         }
     }
@@ -108,7 +96,7 @@ public abstract class ArenaIdFix {
         @Override
         public Optional<ArenaCard> setUpArenaCard(CardEdition edition, OptionalLong arenaId) {
             return exists
-                    ? Optional.of(new ArenaCard(edition, arenaId, null))
+                    ? Optional.of(new ArenaCard(edition, arenaId))
                     : Optional.empty();
         }
 
@@ -156,7 +144,7 @@ public abstract class ArenaIdFix {
         } else if (number == null) {
             throw new RuntimeException("number missing");
         } else {
-            fix = new OverrideNumber(expansion, number.intValue());
+            fix = new OverrideVersionId(expansion, number.intValue());
         }
 
         return Maps.immutableEntry(id, fix);
@@ -266,7 +254,8 @@ public abstract class ArenaIdFix {
                                 .orElseThrow(() -> {
                                     return new RuntimeException(String.format("Did not find %s edition for %s", expansionName, card.getMainName()));
                                 });
-                        ArenaIdFix fix = new OverrideNumber(entry.getExpansionCode(), entry.getCollectorNumber());
+                        ArenaVersionId versionId = entry.getVersionId().orElseThrow(() -> new RuntimeException("Must parse a versioned deck file"));
+                        ArenaIdFix fix = new OverrideVersionId(versionId.getExpansionCode(), versionId.getCollectorNumber());
                         return Optional.of(Maps.immutableEntry(anthologyEdition, fix));
                     })
                     .flatMap(Optional::stream)
@@ -288,7 +277,7 @@ public abstract class ArenaIdFix {
                         return expansion.isNamed("PELP") || expansion.isNamed("PALP");
                     })
                     .collect(MapCollectors.<CardEdition>collecting()
-                            .indexing(edition -> (ArenaIdFix) new OverrideNumber(edition.getExpansion().getProductCode(), edition.getCollectorNumber().getNumber()))
+                            .indexing(edition -> (ArenaIdFix) new OverrideVersionId(edition.getExpansion().getProductCode(), edition.getCollectorNumber().getNumber()))
                             .unique().toImmutableMap());
 
             Map<CardEdition, ArenaIdFix> fixes = new TreeMap<>();
@@ -299,7 +288,7 @@ public abstract class ArenaIdFix {
                 String origSet = line[3];
                 String origNum = line[4];
 
-                CardEdition edition = cards.get(new OverrideNumber(origSet, Integer.parseInt(origNum)));
+                CardEdition edition = cards.get(new OverrideVersionId(origSet, Integer.parseInt(origNum)));
                 List<String> editionArtists = edition.getArtists().collect(Collectors.toList());
                 if (!edition.getCard().getMainName().equals(name)) {
                     throw new RuntimeException("Name mismatch");
@@ -307,7 +296,7 @@ public abstract class ArenaIdFix {
                 if (editionArtists.size() != 1 || !editionArtists.get(0).equals(artist)) {
                     throw new RuntimeException("Artist mismatch");
                 }
-                fixes.put(edition, new OverrideNumber("ANA", Integer.parseInt(anaNumber)));
+                fixes.put(edition, new OverrideVersionId("ANA", Integer.parseInt(anaNumber)));
             }
 
             return fixes;

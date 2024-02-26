@@ -178,6 +178,15 @@ public final class BasicLandPreferenceSequence<V extends CardVersion> {
         return Optional.of(chosenVersions);
     }
 
+    public Deck<V> apply(Deck<V> deck) {
+        return chooseVersions(deck)
+                .map((Map<Card, V> chosenBasicLandVersions) -> deck.transform((V version) -> {
+                    V alteredVersion = chosenBasicLandVersions.get(version.getCard());
+                    return alteredVersion == null ? version : alteredVersion;
+                }))
+                .orElse(deck);
+    }
+
     public <E extends DeckElement<V>> Deck<E> apply(Deck<E> deck, Function<? super V, ? extends E> elementCtor) {
         Objects.requireNonNull(elementCtor);
         Deck<V> versionedDeck = deck.flatTransform(DeckElement::getVersion);

@@ -21,7 +21,6 @@ package io.github.ryanskonnord.lambdagoyf.card;
 
 import java.util.Optional;
 
-@FunctionalInterface
 public interface DeckElement<V extends CardVersion> {
 
     public Optional<V> getVersion();

@@ -27,6 +27,7 @@ import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.PrimitiveSink;
 import io.github.ryanskonnord.lambdagoyf.card.CardIdentity;
+import io.github.ryanskonnord.lambdagoyf.card.DeckElement;
 import io.github.ryanskonnord.util.MinimalRng;
 
 import java.security.SecureRandom;
@@ -34,7 +35,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 public class DeckRandomChoice implements MinimalRng {
