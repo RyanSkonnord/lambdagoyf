@@ -21,6 +21,7 @@ package io.github.ryanskonnord.lambdagoyf.card;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Maps;
 import io.github.ryanskonnord.util.MapCollectors;
 
 import java.util.Map;
@@ -55,5 +56,9 @@ public class CardNames {
             String s = LATIN_CHARACTERS.get(c);
             return s != null ? s : Character.toString(c);
         }).collect(Collectors.joining());
+    }
+
+    public static <V> Map.Entry<String, V> normalizeMapEntry(Map.Entry<String, ? extends V> entry) {
+        return Maps.immutableEntry(normalize(entry.getKey()), entry.getValue());
     }
 }

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.github.ryanskonnord.lambdagoyf.Environment;
 import io.github.ryanskonnord.lambdagoyf.card.field.CardSupertype;
+import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckEntry;
 import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckFormatter;
 import io.github.ryanskonnord.lambdagoyf.deck.Deck;
 import io.github.ryanskonnord.lambdagoyf.scryfall.ScryfallParser;

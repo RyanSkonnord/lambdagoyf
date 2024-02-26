@@ -28,7 +28,6 @@ import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multiset;
 import io.github.ryanskonnord.lambdagoyf.card.Card;
 import io.github.ryanskonnord.lambdagoyf.card.CardEdition;
-import io.github.ryanskonnord.lambdagoyf.card.CardFace;
 import io.github.ryanskonnord.lambdagoyf.card.Expansion;
 import io.github.ryanskonnord.lambdagoyf.card.MtgoCard;
 import io.github.ryanskonnord.lambdagoyf.card.Spoiler;
@@ -68,6 +67,7 @@ import java.util.stream.Stream;
 
 import static io.github.ryanskonnord.lambdagoyf.deck.Deck.Section.MAIN_DECK;
 import static io.github.ryanskonnord.lambdagoyf.deck.Deck.Section.SIDEBOARD;
+import static io.github.ryanskonnord.lambdagoyf.deck.MtgoDeck.getMtgoName;
 
 public final class MtgoDeckFormatter {
 
@@ -144,9 +144,6 @@ public final class MtgoDeckFormatter {
         return builder.build();
     }
 
-    private static String getMtgoName(Card card) {
-        return card.getBaseFaces().map(CardFace::getName).collect(Collectors.joining("/"));
-    }
 
     private static String formatTxtLine(Multiset.Entry<Card> entry) {
         return String.format("%d %s\n", entry.getCount(), getMtgoName(entry.getElement()));
@@ -308,11 +305,10 @@ public final class MtgoDeckFormatter {
         }
     }
 
-    public static Deck<Long> parseCsv(Reader reader) throws IOException {
-        List<MtgoCsvEntry> entries = parseCsvToRaw(reader);
-        Deck.Builder<Long> builder = new Deck.Builder<>();
-        for (MtgoCsvEntry entry : entries) {
-            builder.addTo(entry.sideboarded ? SIDEBOARD : MAIN_DECK, entry.id, entry.quantity);
+    public static MtgoDeck parseCsv(Spoiler spoiler, Reader reader) throws IOException {
+        MtgoDeck.Builder builder = new MtgoDeck.Builder();
+        for (MtgoCsvEntry entry : parseCsvToRaw(reader)) {
+            builder.add(spoiler, entry.name, entry.id, entry.quantity, entry.sideboarded);
         }
         return builder.build();
     }
@@ -401,23 +397,5 @@ public final class MtgoDeckFormatter {
             return card;
         });
     }
-
-    public static Deck<MtgoCard> createDeckFromMtgoIds(Spoiler spoiler, Deck<? extends Number> mtgoIds) {
-        return createDeckFromMtgoIds(spoiler, mtgoIds,
-                (Number missingId) -> {
-                    throw new DeckDataException("Unrecognized MTGO ID: " + missingId);
-                });
-    }
-
-    public static Deck<MtgoCard> createDeckFromMtgoIds(Spoiler spoiler,
-                                                       Deck<? extends Number> mtgoIds,
-                                                       Consumer<? super Number> missingIdHandler) {
-        return mtgoIds.flatTransform((Number mtgoId) -> {
-            Optional<MtgoCard> card = spoiler.lookUpByMtgoId(mtgoId.longValue());
-            if (!card.isPresent()) missingIdHandler.accept(mtgoId);
-            return card;
-        });
-    }
-
 
 }

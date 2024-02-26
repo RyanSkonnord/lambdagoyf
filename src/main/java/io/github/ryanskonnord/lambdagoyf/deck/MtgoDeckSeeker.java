@@ -70,11 +70,11 @@ public final class MtgoDeckSeeker {
                         .unique().toImmutableSortedMap(String.CASE_INSENSITIVE_ORDER));
     }
 
-    public static final class MtgoDeckEntry {
+    public static final class MtgoDeckFileGroup {
         private final Path base;
         private final ImmutableMap<MtgoDeckFileFormat, Path> files;
 
-        private MtgoDeckEntry(Path base, Builder builder) {
+        private MtgoDeckFileGroup(Path base, Builder builder) {
             this.base = base;
             this.files = Maps.immutableEnumMap(builder.files);
         }
@@ -97,7 +97,7 @@ public final class MtgoDeckSeeker {
 
         @Override
         public boolean equals(Object o) {
-            return this == o || !(o == null || getClass() != o.getClass()) && files.equals(((MtgoDeckEntry) o).files);
+            return this == o || !(o == null || getClass() != o.getClass()) && files.equals(((MtgoDeckFileGroup) o).files);
         }
 
         @Override
@@ -113,9 +113,9 @@ public final class MtgoDeckSeeker {
 
     private static final Pattern FILE_EXTENSION_PATTERN = Pattern.compile("(?<name>.*)\\.(?<extension>\\w+)");
 
-    public ImmutableCollection<MtgoDeckEntry> seek() throws IOException {
+    public ImmutableCollection<MtgoDeckFileGroup> seek() throws IOException {
         List<Path> paths = Files.walk(root).filter(filter).collect(Collectors.toList());
-        Map<Path, MtgoDeckEntry.Builder> builders = new HashMap<>();
+        Map<Path, MtgoDeckFileGroup.Builder> builders = new HashMap<>();
         for (Path path : paths) {
             Matcher matcher = FILE_EXTENSION_PATTERN.matcher(path.toAbsolutePath().toString());
             if (matcher.matches()) {
@@ -123,9 +123,9 @@ public final class MtgoDeckSeeker {
                 MtgoDeckFileFormat format = MtgoDeckFileFormat.BY_EXTENSION.get(extension);
                 if (format != null) {
                     Path name = Paths.get(matcher.group("name"));
-                    MtgoDeckEntry.Builder builder = builders.get(name);
+                    MtgoDeckFileGroup.Builder builder = builders.get(name);
                     if (builder == null) {
-                        builders.put(name, builder = new MtgoDeckEntry.Builder());
+                        builders.put(name, builder = new MtgoDeckFileGroup.Builder());
                     }
                     builder.files.put(format, path);
                 }
@@ -133,7 +133,7 @@ public final class MtgoDeckSeeker {
         }
         return builders.entrySet().stream()
                 .sorted(Comparator.comparing(Map.Entry::getKey))
-                .map(e -> new MtgoDeckEntry(e.getKey(), e.getValue()))
+                .map(e -> new MtgoDeckFileGroup(e.getKey(), e.getValue()))
                 .collect(ImmutableList.toImmutableList());
     }
 

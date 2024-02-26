@@ -35,6 +35,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import io.github.ryanskonnord.lambdagoyf.card.field.ExpansionType;
 import io.github.ryanskonnord.lambdagoyf.card.field.Language;
+import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckEntry;
 import io.github.ryanskonnord.util.MapCollectors;
 
 import java.util.ArrayList;

@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multiset;
@@ -55,6 +56,7 @@ import io.github.ryanskonnord.lambdagoyf.deck.DeckConstructor;
 import io.github.ryanskonnord.lambdagoyf.deck.DeckRandomChoice;
 import io.github.ryanskonnord.lambdagoyf.deck.DeckSeeker;
 import io.github.ryanskonnord.lambdagoyf.deck.DeckSeeker.DeckFileFormat;
+import io.github.ryanskonnord.lambdagoyf.deck.MtgoDeck;
 import io.github.ryanskonnord.lambdagoyf.deck.MtgoDeckFormatter;
 import io.github.ryanskonnord.lambdagoyf.deck.PreferenceBuilder;
 import io.github.ryanskonnord.lambdagoyf.deck.preference.BasicLandPreferenceSequence;
@@ -85,6 +87,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.function.UnaryOperator;
@@ -106,10 +109,10 @@ import static io.github.ryanskonnord.lambdagoyf.deck.preference.MtgoCardPreferen
 
 public final class RyansMtgoDecks {
 
-    private static Multiset<Long> parseMyCollection() throws IOException {
+    private static Multiset<MtgoDeck.CardEntry> parseMyCollection(Spoiler spoiler) throws IOException {
         Path myCollectionPath = getDeckFilePath().resolve("Magic Online Collection.csv");
         try (Reader reader = Files.newBufferedReader(myCollectionPath)) {
-            return MtgoDeckFormatter.parseCsv(reader).getAllCards();
+            return MtgoDeckFormatter.parseCsv(spoiler, reader).asDeckObject().getAllCards();
         }
     }
 
@@ -510,8 +513,14 @@ public final class RyansMtgoDecks {
         }
     }
 
-    private static ToIntFunction<MtgoCard> getAvailabilityFunction(Deck<MtgoCard> collection) {
-        return collection.getAllCards()::count;
+    private static ToIntFunction<MtgoCard> getAvailabilityFunction(Multiset<MtgoDeck.CardEntry> collection) {
+        ImmutableMultiset.Builder<MtgoCard> builder = ImmutableMultiset.builder();
+        for (Multiset.Entry<MtgoDeck.CardEntry> entry : collection.entrySet()) {
+            Optional<MtgoCard> version = entry.getElement().getVersion();
+            version.ifPresent(v -> builder.addCopies(v, entry.getCount()));
+        }
+        ImmutableMultiset<MtgoCard> cards = builder.build();
+        return cards::count;
     }
 
     private static boolean isInNetdeckFolder(Path path) {
@@ -547,14 +556,20 @@ public final class RyansMtgoDecks {
                 .findFirst().orElseThrow();
     }
 
+    private Function<Card, MtgoDeck.CardEntry> getFallbackFromCollection(MtgoDeck collection) {
+        return (Card card) -> {
+            Set<MtgoDeck.CardEntry> entries = collection.getEntriesForName(card.getMainName());
+            return entries.stream().min(Comparator.comparing(MtgoDeck.CardEntry::getId))
+                    .orElseThrow(() -> new DeckConstructor.CardVersionNotFoundException(card));
+        };
+    }
+
     public static void main(String[] args) throws Exception {
         Spoiler spoiler = ScryfallParser.createSpoiler();
 
         SnowConversion snowConversion = new SnowConversion(spoiler);
         WinterCheer winterCheer = new WinterCheer(Clock.systemDefaultZone(), snowConversion);
-        Deck<MtgoCard> myCollection = MtgoDeckFormatter.createDeckFromMtgoIds(spoiler,
-                Deck.createSimpleDeck(parseMyCollection()),
-                id -> System.err.println(String.format("<Cards CatID=\"%d\" Quantity=\"1\" Sideboard=\"false\" />", id)));
+        Multiset<MtgoDeck.CardEntry> myCollection = parseMyCollection(spoiler);
         ToIntFunction<MtgoCard> collectionAvailability = getAvailabilityFunction(myCollection);
 
         BasicLandPreferenceSequence.Context<MtgoCard> basicLandPreferenceContext = new BasicLandPreferenceSequence.Context<>(
@@ -564,8 +579,9 @@ public final class RyansMtgoDecks {
         Path allDirectory = constructedDirectory.resolve("All");
         Files.createDirectories(allDirectory);
         for (DeckFormatDirectory directory : EnumSet.allOf(DeckFormatDirectory.class)) {
-            DeckConstructor<MtgoCard> deckConstructor = DeckConstructor.createForMtgo()
+            DeckConstructor<MtgoCard, MtgoDeck.CardEntry> deckConstructor = DeckConstructor.createForMtgo()
                     .setAvailability(collectionAvailability)
+
                     .withPreferenceOrder().override(directory.getPreference())
                     .withOverflowOver().override(DEFAULT_OVERFLOW)
                     .addDeckTransformation(deck -> CompanionLegality.addMissingCompanion(spoiler, deck, directory.format))

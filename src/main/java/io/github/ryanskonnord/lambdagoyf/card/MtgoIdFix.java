@@ -28,6 +28,7 @@ import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multimaps;
 import io.github.ryanskonnord.lambdagoyf.Environment;
 import io.github.ryanskonnord.lambdagoyf.card.field.Finish;
+import io.github.ryanskonnord.lambdagoyf.deck.MtgoDeck;
 import io.github.ryanskonnord.lambdagoyf.deck.MtgoDeckFormatter;
 import io.github.ryanskonnord.lambdagoyf.scryfall.ScryfallCardEntry;
 import io.github.ryanskonnord.lambdagoyf.scryfall.ScryfallParser;
@@ -284,7 +285,8 @@ public final class MtgoIdFix implements Comparable<MtgoIdFix> {
 
     private static Expansion readExpansionOfSetDump(Spoiler spoiler, Path setDump) throws IOException {
         try (Reader reader = Files.newBufferedReader(setDump)) {
-            return MtgoDeckFormatter.parseCsv(reader).transform(spoiler::lookUpByMtgoId)
+            return MtgoDeckFormatter.parseCsv(spoiler, reader).asDeckObject()
+                    .transform(MtgoDeck.CardEntry::getVersion)
                     .getAllCards().elementSet().stream()
                     .flatMap(Optional::stream)
                     .map(c -> c.getEdition().getExpansion())

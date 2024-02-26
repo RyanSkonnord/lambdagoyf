@@ -33,7 +33,7 @@ import com.google.common.collect.Multiset;
 import io.github.ryanskonnord.lambdagoyf.Environment;
 import io.github.ryanskonnord.lambdagoyf.card.AlchemyConverter;
 import io.github.ryanskonnord.lambdagoyf.card.ArenaCard;
-import io.github.ryanskonnord.lambdagoyf.card.ArenaDeckEntry;
+import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckEntry;
 import io.github.ryanskonnord.lambdagoyf.card.Card;
 import io.github.ryanskonnord.lambdagoyf.card.CardEdition;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersion;

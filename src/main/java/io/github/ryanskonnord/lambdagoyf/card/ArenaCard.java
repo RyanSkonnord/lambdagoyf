@@ -31,6 +31,7 @@ import io.github.ryanskonnord.lambdagoyf.card.field.ExpansionType;
 import io.github.ryanskonnord.lambdagoyf.card.field.FrameEffect;
 import io.github.ryanskonnord.lambdagoyf.card.field.Language;
 import io.github.ryanskonnord.lambdagoyf.card.field.PromoType;
+import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckEntry;
 import io.github.ryanskonnord.util.MapCollectors;
 
 import java.time.LocalDate;
