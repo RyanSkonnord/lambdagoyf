@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import io.github.ryanskonnord.lambdagoyf.card.Card;
 import io.github.ryanskonnord.lambdagoyf.card.CardFace;
 import io.github.ryanskonnord.lambdagoyf.card.CardNames;
+import io.github.ryanskonnord.lambdagoyf.card.DeckElement;
 import io.github.ryanskonnord.lambdagoyf.card.MtgoCard;
 import io.github.ryanskonnord.lambdagoyf.card.Spoiler;
 import io.github.ryanskonnord.util.MapCollectors;
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
  */
 public class MtgoDeck {
 
-    public static final class CardEntry {
+    public static final class CardEntry implements DeckElement<MtgoCard> {
         private final String name;
         private final long id;
         private final Optional<MtgoCard> version;
@@ -85,7 +86,7 @@ public class MtgoDeck {
         }
     }
 
-    public static final class DeckEntry {
+    public static final class DeckEntry implements DeckElement<MtgoCard> {
         private final int quantity;
         private final CardEntry card;
         private final boolean isInSideboard;
@@ -107,6 +108,11 @@ public class MtgoDeck {
 
         public boolean isInSideboard() {
             return isInSideboard;
+        }
+
+        @Override
+        public Optional<MtgoCard> getVersion() {
+            return card.getVersion();
         }
 
         @Override

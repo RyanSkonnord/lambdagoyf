@@ -31,6 +31,7 @@ import com.google.common.collect.Multisets;
 import io.github.ryanskonnord.lambdagoyf.card.Card;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersion;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersionExtractor;
+import io.github.ryanskonnord.lambdagoyf.card.DeckElement;
 import io.github.ryanskonnord.lambdagoyf.card.Spoiler;
 import io.github.ryanskonnord.lambdagoyf.card.field.CardSupertype;
 import io.github.ryanskonnord.lambdagoyf.deck.Deck;
@@ -177,12 +178,17 @@ public final class BasicLandPreferenceSequence<V extends CardVersion> {
         return Optional.of(chosenVersions);
     }
 
-    public Deck<V> apply(Deck<V> deck) {
-        return chooseVersions(deck)
-                .map((Map<Card, V> chosenVersions) -> deck.transform((V version) -> {
-                    V alteredVersion = chosenVersions.get(version.getCard());
-                    return alteredVersion == null ? version : alteredVersion;
-                }))
+    public <E extends DeckElement<V>> Deck<E> apply(Deck<E> deck, Function<? super V, ? extends E> elementCtor) {
+        Objects.requireNonNull(elementCtor);
+        Deck<V> versionedDeck = deck.flatTransform(DeckElement::getVersion);
+        return chooseVersions(versionedDeck)
+                .map((Map<Card, V> chosenBasicLandVersions) ->
+                        deck.transform((E element) -> {
+                            Optional<V> version = element.getVersion();
+                            if (version.isEmpty()) return null;
+                            V basicLandVersion = chosenBasicLandVersions.get(version.get().getCard());
+                            return basicLandVersion == null ? element : elementCtor.apply(basicLandVersion);
+                        }))
                 .orElse(deck);
     }
 

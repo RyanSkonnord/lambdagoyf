@@ -24,7 +24,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multiset;
@@ -87,7 +86,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.function.UnaryOperator;
@@ -404,7 +402,7 @@ public final class RyansMtgoDecks {
         };
     }
 
-    private static UnaryOperator<Deck<MtgoCard>> useKaldheimSnowLands(Spoiler spoiler) {
+    private static UnaryOperator<Deck<MtgoDeck.CardEntry>> useKaldheimSnowLands(Spoiler spoiler) {
         ImmutableMap<Card, MtgoCard> kaldheimNonsnowBasics = Color.getBasicLandTypes().stream()
                 .map(n -> spoiler.lookUpByName(n).orElseThrow())
                 .collect(MapCollectors.<Card>collecting()
@@ -419,19 +417,23 @@ public final class RyansMtgoDecks {
                                 .flatMap(e -> e.getMtgoCard(Finish.NONFOIL).stream()))
                         .toImmutableListMultimap());
 
-        return (Deck<MtgoCard> deck) -> {
+        return (Deck<MtgoDeck.CardEntry> deck) -> {
             Collection<MtgoCard> snowLandsInDeck = deck.getAllCards().elementSet().stream()
+                    .flatMap(e -> e.getVersion().stream())
                     .filter((MtgoCard c) -> kaldheimSnowBasics.containsKey(c.getCard()))
                     .collect(Collectors.toList());
             if (snowLandsInDeck.isEmpty()) return deck;
-            return deck.transform((MtgoCard c) -> {
-                MtgoCard nonsnow = kaldheimNonsnowBasics.get(c.getCard());
-                if (nonsnow != null) return nonsnow;
-                Collection<MtgoCard> snow = kaldheimSnowBasics.get(c.getCard());
-                if (snow.isEmpty()) return c;
-                return snow.stream()
+            return deck.transform((MtgoDeck.CardEntry entry) -> {
+                Optional<MtgoCard> version = entry.getVersion();
+                if (version.isEmpty()) return entry;
+                Card card = version.get().getCard();
+                MtgoCard nonsnow = kaldheimNonsnowBasics.get(card);
+                if (nonsnow != null) return new MtgoDeck.CardEntry(nonsnow);
+                Collection<MtgoCard> snow = kaldheimSnowBasics.get(card);
+                if (snow.isEmpty()) return entry;
+                return new MtgoDeck.CardEntry(snow.stream()
                         .filter(s -> s.getEdition().hasArtist("Adam Paquette") == (snowLandsInDeck.size() > 1))
-                        .collect(MoreCollectors.onlyElement());
+                        .collect(MoreCollectors.onlyElement()));
             });
         };
     }
@@ -450,21 +452,25 @@ public final class RyansMtgoDecks {
                 CardVersionExtractor.getMtgoCards(), secretLairLands, collectionAvailability, 0x727088cf424f3b18L);
     }
 
-    private static UnaryOperator<Deck<MtgoCard>> transformTo(Predicate<MtgoCard> predicate,
-                                                             ToIntFunction<MtgoCard> collectionAvailability) {
+    private static UnaryOperator<Deck<MtgoDeck.CardEntry>> transformTo(Predicate<MtgoCard> predicate,
+                                                                       ToIntFunction<MtgoCard> collectionAvailability) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(collectionAvailability);
-        return (Deck<MtgoCard> deck) -> {
-            DeckRandomChoice choice = DeckRandomChoice.withSalt(0x5b114dfa7866f512L).forDeck(deck);
-            return deck.transformCards((Multiset.Entry<MtgoCard> entry) -> {
+        return (Deck<MtgoDeck.CardEntry> deck) -> {
+            DeckRandomChoice choice = DeckRandomChoice.withSalt(0x5b114dfa7866f512L)
+                    .forDeck(deck.flatTransform(MtgoDeck.CardEntry::getVersion));
+            return deck.transformCards((Multiset.Entry<MtgoDeck.CardEntry> entry) -> {
                 int count = entry.getCount();
-                Card card = entry.getElement().getCard();
+                MtgoDeck.CardEntry element = entry.getElement();
+                Optional<MtgoCard> version = element.getVersion();
+                if (version.isEmpty()) return MultisetUtil.ofSingleEntry(element, count);
+                Card card = version.get().getCard();
                 List<MtgoCard> versions = CardVersionExtractor.getMtgoCards().fromCard(card)
                         .filter(c -> collectionAvailability.applyAsInt(c) >= count && predicate.test(c))
                         .collect(Collectors.toList());
                 if (versions.isEmpty()) return null;
                 MtgoCard chosenVersion = choice.forCard(card).choose(versions);
-                return MultisetUtil.ofSingleEntry(chosenVersion, count);
+                return MultisetUtil.ofSingleEntry(new MtgoDeck.CardEntry(chosenVersion), count);
             });
         };
     }
@@ -513,16 +519,6 @@ public final class RyansMtgoDecks {
         }
     }
 
-    private static ToIntFunction<MtgoCard> getAvailabilityFunction(Multiset<MtgoDeck.CardEntry> collection) {
-        ImmutableMultiset.Builder<MtgoCard> builder = ImmutableMultiset.builder();
-        for (Multiset.Entry<MtgoDeck.CardEntry> entry : collection.entrySet()) {
-            Optional<MtgoCard> version = entry.getElement().getVersion();
-            version.ifPresent(v -> builder.addCopies(v, entry.getCount()));
-        }
-        ImmutableMultiset<MtgoCard> cards = builder.build();
-        return cards::count;
-    }
-
     private static boolean isInNetdeckFolder(Path path) {
         for (Path part : path) {
             if (part.toString().equals("Netdecks")) {
@@ -556,21 +552,13 @@ public final class RyansMtgoDecks {
                 .findFirst().orElseThrow();
     }
 
-    private Function<Card, MtgoDeck.CardEntry> getFallbackFromCollection(MtgoDeck collection) {
-        return (Card card) -> {
-            Set<MtgoDeck.CardEntry> entries = collection.getEntriesForName(card.getMainName());
-            return entries.stream().min(Comparator.comparing(MtgoDeck.CardEntry::getId))
-                    .orElseThrow(() -> new DeckConstructor.CardVersionNotFoundException(card));
-        };
-    }
-
     public static void main(String[] args) throws Exception {
         Spoiler spoiler = ScryfallParser.createSpoiler();
 
         SnowConversion snowConversion = new SnowConversion(spoiler);
         WinterCheer winterCheer = new WinterCheer(Clock.systemDefaultZone(), snowConversion);
         Multiset<MtgoDeck.CardEntry> myCollection = parseMyCollection(spoiler);
-        ToIntFunction<MtgoCard> collectionAvailability = getAvailabilityFunction(myCollection);
+        ToIntFunction<MtgoDeck.CardEntry> collectionAvailability = myCollection::count;
 
         BasicLandPreferenceSequence.Context<MtgoCard> basicLandPreferenceContext = new BasicLandPreferenceSequence.Context<>(
                 spoiler, CardVersionExtractor.getMtgoCards(), collectionAvailability);
@@ -588,14 +576,14 @@ public final class RyansMtgoDecks {
 //                    .addDeckTransformation(snowConversion::convertWithFieldBluff)
                     .addDeckTransformation(snowConversion::removeSuperfluousSnowLands)
                     .addDeckTransformation(directory.allowsSnow() ? winterCheer::convertSeasonally : UnaryOperator.identity())
-                    .addVersionTransformation(getBasicLandPreference(basicLandPreferenceContext, directory)::apply)
+                    .addOutputTransformation(d -> getBasicLandPreference(basicLandPreferenceContext, directory).apply(d, MtgoDeck.CardEntry::new))
 //                    .addVersionTransformation(adjustForAbnormalBasics())
 //                    .addVersionTransformation(useKaldheimSnowLands(spoiler))
-                    .addVersionTransformation(transformTo(useCoreSetBasicLands(directory), collectionAvailability))
-                    .addVersionTransformation(directory == DeckFormatDirectory.PIONEER
+                    .addOutputTransformation(transformTo(useCoreSetBasicLands(directory), collectionAvailability))
+                    .addOutputTransformation(directory == DeckFormatDirectory.PIONEER
                             ? useKaldheimSnowLands(spoiler)
                             : transformTo(useModernHorizonsSnowLands(), collectionAvailability))
-                    .addVersionTransformation(useSecretLairLands(collectionAvailability, "Alayna Danner"))
+                    .addOutputTransformation(useSecretLairLands(collectionAvailability, "Alayna Danner"))
                     .build();
             Path root = constructedDirectory.resolve(directory.directoryName);
             Files.createDirectories(root);
@@ -611,7 +599,7 @@ public final class RyansMtgoDecks {
                         deckWithCardNames = MtgoDeckFormatter.parseTxt(reader);
                     }
                     Deck<Card> unversionedDeck = MtgoDeckFormatter.createDeckFromCardNames(spoiler, deckWithCardNames);
-                    Deck<MtgoCard> versionedDeck = deckConstructor.createDeck(unversionedDeck);
+                    Deck<MtgoDeck.CardEntry> versionedDeck = deckConstructor.createDeck(unversionedDeck);
                     Path outputPath = deckEntry.getPath(DeckFileFormat.DEK);
                     Files.createDirectories(outputPath.getParent());
                     try (OutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(outputPath))) {

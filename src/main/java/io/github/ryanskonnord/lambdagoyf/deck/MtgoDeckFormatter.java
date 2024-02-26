@@ -205,21 +205,21 @@ public final class MtgoDeckFormatter {
                 .map((Multiset.Entry<C> e) -> new DeckEntry<>(e.getElement(), e.getCount(), isSideboard));
     }
 
-    private static Stream<DeckEntry<MtgoCard>> streamEntries(Deck<MtgoCard> deck) {
-        Stream<DeckEntry<MtgoCard>> mainDeck = streamPartToEntries(deck.get(MAIN_DECK), false);
-        Stream<DeckEntry<MtgoCard>> sideboard = streamPartToEntries(deck.getLegalSideboard(), true);
+    private static Stream<DeckEntry<MtgoDeck.CardEntry>> streamEntries(Deck<MtgoDeck.CardEntry> deck) {
+        Stream<DeckEntry<MtgoDeck.CardEntry>> mainDeck = streamPartToEntries(deck.get(MAIN_DECK), false);
+        Stream<DeckEntry<MtgoDeck.CardEntry>> sideboard = streamPartToEntries(deck.getLegalSideboard(), true);
         return Stream.of(mainDeck, sideboard)
-                .flatMap((Stream<DeckEntry<MtgoCard>> part) ->
-                        part.sorted(Comparator.comparing((DeckEntry<MtgoCard> entry) -> entry.card.getMtgoId())));
+                .flatMap((Stream<DeckEntry<MtgoDeck.CardEntry>> part) ->
+                        part.sorted(Comparator.comparing((DeckEntry<MtgoDeck.CardEntry> entry) -> entry.card.getId())));
     }
 
-    private static String formatDekEntry(DeckEntry<MtgoCard> entry) {
+    private static String formatDekEntry(DeckEntry<MtgoDeck.CardEntry> entry) {
         return String.format("  <Cards CatID=\"%d\" Quantity=\"%d\" Sideboard=\"%s\" Name=\"%s\" />\n",
-                entry.card.getMtgoId(), entry.quantity, entry.isInSideboard,
-                getMtgoName(entry.card.getEdition().getCard()).replace("\"", "&quot;"));
+                entry.card.getId(), entry.quantity, entry.isInSideboard,
+                entry.card.getName().replace("\"", "&quot;"));
     }
 
-    public static void writeDek(OutputStream outputStream, Deck<MtgoCard> deck) throws IOException {
+    public static void writeDek(OutputStream outputStream, Deck<MtgoDeck.CardEntry> deck) throws IOException {
         List<String> lines = streamEntries(deck)
                 .map(MtgoDeckFormatter::formatDekEntry)
                 .collect(Collectors.toList());
@@ -327,20 +327,23 @@ public final class MtgoDeckFormatter {
 
     public static void writeCsv(Writer writer, Deck<MtgoCard> deck) throws IOException {
         boolean hasSideboard = !deck.getLegalSideboard().isEmpty();
-        List<String> lines = streamEntries(deck)
-                .map((DeckEntry<MtgoCard> entry) -> {
+        Deck<MtgoDeck.CardEntry> transform = deck.transform(MtgoDeck.CardEntry::new);
+        List<String> lines = streamEntries(transform)
+                .map((DeckEntry<MtgoDeck.CardEntry> entry) -> {
                     StringBuilder builder = new StringBuilder(70);
-                    CardEdition cardEdition = entry.card.getEdition();
+                    MtgoCard card = entry.card.getVersion()
+                            .orElseThrow(RuntimeException::new); // should be impossible because we made it from MtgoCards ourselves
+                    CardEdition cardEdition = card.getEdition();
                     Expansion expansion = cardEdition.getExpansion();
 
                     builder.append('"').append(getMtgoName(cardEdition.getCard())).append('"')
                             .append(',').append(entry.quantity)
-                            .append(',').append(entry.card.getMtgoId())
+                            .append(',').append(card.getMtgoId())
                             .append(',').append(formatRarity(cardEdition.getRarity()))
                             .append(',').append(expansion.getMtgoCode().orElse(expansion.getProductCode()))
                             .append(',').append(cardEdition.getCollectorNumber().getNumber())
                             .append('/').append(expansion.getCardCount())
-                            .append(',').append(formatCsvBoolean(entry.card.getFinish() == Finish.FOIL));
+                            .append(',').append(formatCsvBoolean(card.getFinish() == Finish.FOIL));
                     if (hasSideboard) {
                         builder.append(',').append(formatCsvBoolean(entry.isInSideboard));
                     }
