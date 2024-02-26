@@ -55,7 +55,6 @@ import io.github.ryanskonnord.lambdagoyf.deck.CompanionLegality;
 import io.github.ryanskonnord.lambdagoyf.deck.Deck;
 import io.github.ryanskonnord.lambdagoyf.deck.DeckConstructor;
 import io.github.ryanskonnord.lambdagoyf.deck.DeckRandomChoice;
-import io.github.ryanskonnord.lambdagoyf.deck.MtgoDeckFormatter;
 import io.github.ryanskonnord.lambdagoyf.deck.preference.MinimalArtistGrouper;
 import io.github.ryanskonnord.lambdagoyf.scryfall.ScryfallParser;
 import io.github.ryanskonnord.util.MapCollectors;
@@ -417,24 +416,6 @@ public final class RyansMtgaDecks {
         }
     }
 
-    private static Optional<Deck<Card>> readDeck(Spoiler spoiler, Path source) throws IOException {
-        Deck<Card> deck;
-        try (Reader reader = Files.newBufferedReader(source)) {
-            Deck<String> cardNames = MtgoDeckFormatter.parseTxt(reader);
-            deck = MtgoDeckFormatter.createDeckFromCardNames(spoiler, cardNames);
-        } catch (MtgoDeckFormatter.DeckDataException mtgoException) {
-            try (Reader reader = Files.newBufferedReader(source)) {
-                Deck<ArenaCard> arenaDeck = ArenaDeckFormatter.readDeck(spoiler, reader);
-                deck = arenaDeck.transform(CardVersion::getCard);
-            } catch (ArenaDeckFormatter.DeckDataException arenaException) {
-                System.err.println(mtgoException.getMessage());
-                System.err.println(arenaException.getMessage());
-                return Optional.empty();
-            }
-        }
-        return Optional.of(deck);
-    }
-
     private static void generate(Spoiler spoiler, Path sourceDirectory,
                                  Consumer<DeckConstructor.Builder<ArenaCard, ArenaDeckEntry>> modifier)
             throws IOException {
@@ -460,14 +441,15 @@ public final class RyansMtgaDecks {
             if (Files.exists(destination)) continue;
 
             try {
-                Optional<Deck<Card>> deck = readDeck(spoiler, source);
-                if (deck.isPresent()) {
-                    Deck<ArenaDeckEntry> arenaDeck = deckConstructor.createDeck(deck.get());
-                    arenaDeck = arenaDeck.sortCards(ArenaDeckFormatter.orderArenaCards());
-                    arenaDeck = ArenaDeckFormatter.prioritizeBestOfOneSideboard(arenaDeck);
-                    try (Writer writer = Files.newBufferedWriter(destination)) {
-                        ArenaDeckFormatter.write(writer, arenaDeck);
-                    }
+                Deck<Card> deck;
+                try (Reader reader = Files.newBufferedReader(source)) {
+                    deck = ArenaDeckFormatter.readDeck(spoiler, reader);
+                }
+                Deck<ArenaDeckEntry> arenaDeck = deckConstructor.createDeck(deck);
+                arenaDeck = arenaDeck.sortCards(ArenaDeckFormatter.orderArenaCards());
+                arenaDeck = ArenaDeckFormatter.prioritizeBestOfOneSideboard(arenaDeck);
+                try (Writer writer = Files.newBufferedWriter(destination)) {
+                    ArenaDeckFormatter.write(writer, arenaDeck);
                 }
             } catch (Exception e) {
                 System.err.println("Error on " + entry.getSource());

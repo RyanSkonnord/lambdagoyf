@@ -168,9 +168,9 @@ public final class ArenaDeckFormatter {
         return builder.build();
     }
 
-    public static Deck<ArenaCard> readDeck(Spoiler spoiler, Reader reader) throws IOException {
-        return readEntries(reader).transform(entry -> spoiler.lookUpByArenaDeckEntry(entry)
-                .orElseThrow(() -> new DeckDataException("Unrecognized Arena card: " + entry)));
+    public static Deck<Card> readDeck(Spoiler spoiler, Reader reader) throws IOException {
+        return readEntries(reader).transform(entry -> spoiler.lookUpByName(entry.getCardName())
+                .orElseThrow(() -> new DeckDataException("No card found with name: " + entry)));
     }
 
     public static final class DeckDataException extends RuntimeException {
