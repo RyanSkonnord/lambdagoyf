@@ -27,6 +27,7 @@ import com.google.common.collect.Multiset;
 import io.github.ryanskonnord.lambdagoyf.card.Card;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersion;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersionExtractor;
+import io.github.ryanskonnord.lambdagoyf.card.DeckElement;
 import io.github.ryanskonnord.lambdagoyf.deck.Deck;
 import io.github.ryanskonnord.lambdagoyf.deck.DeckRandomChoice;
 import io.github.ryanskonnord.util.MapCollectors;
@@ -36,30 +37,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.function.UnaryOperator;
 
-public class GroupReplacementWithAvailability<V extends CardVersion> implements UnaryOperator<Deck<V>> {
+public class GroupReplacementWithAvailability<V extends CardVersion, T extends DeckElement<V>> implements UnaryOperator<Deck<T>> {
 
     private final CardVersionExtractor<V> extractor;
+    private final Function<V, T> outputCtor;
     private final Predicate<? super V> groupPredicate;
-    private final ToIntFunction<V> availabilityFunction;
+    private final ToIntFunction<T> availabilityFunction;
     private final long salt;
 
     public GroupReplacementWithAvailability(CardVersionExtractor<V> extractor,
+                                            Function<V, T> outputCtor,
                                             Predicate<? super V> groupPredicate,
-                                            ToIntFunction<V> availabilityFunction,
+                                            ToIntFunction<T> availabilityFunction,
                                             long salt) {
         this.extractor = Objects.requireNonNull(extractor);
+        this.outputCtor = Objects.requireNonNull(outputCtor);
         this.groupPredicate = Objects.requireNonNull(groupPredicate);
         this.availabilityFunction = Objects.requireNonNull(availabilityFunction);
         this.salt = salt;
     }
 
     @Override
-    public Deck<V> apply(Deck<V> deck) {
-        Multiset<Card> cards = Deck.toCards(deck).getAllCards();
+    public Deck<T> apply(Deck<T> deck) {
+        Deck<Card> versionedDeck = deck.flatTransform(e -> e.getVersion().map(CardVersion::getCard));
+        Multiset<Card> cards = versionedDeck.getAllCards();
         ListMultimap<Card, V> versions = cards.elementSet().stream()
                 .sorted()
                 .collect(MapCollectors.<Card>collecting()
@@ -67,7 +73,7 @@ public class GroupReplacementWithAvailability<V extends CardVersion> implements 
                         .toImmutableListMultimap());
 
         List<Map.Entry<Card, List<V>>> replacements = ImmutableList.copyOf(Multimaps.asMap(versions).entrySet());
-        DeckRandomChoice[] seeds = DeckRandomChoice.withSalt(salt).getArrayForDeck(deck, replacements.size());
+        DeckRandomChoice[] seeds = DeckRandomChoice.withSalt(salt).getArrayForDeck(versionedDeck, replacements.size());
         Map<Card, V> choices = Maps.newHashMapWithExpectedSize(replacements.size());
         for (int i = 0; i < replacements.size(); i++) {
             Map.Entry<Card, List<V>> entry = replacements.get(i);
@@ -76,7 +82,7 @@ public class GroupReplacementWithAvailability<V extends CardVersion> implements 
             List<V> candidates = seeds[i].shuffle(entry.getValue());
 
             Optional<V> choice = candidates.stream()
-                    .filter(candidate -> availabilityFunction.applyAsInt(candidate) >= numberInDeck)
+                    .filter(candidate -> availabilityFunction.applyAsInt(outputCtor.apply(candidate)) >= numberInDeck)
                     .findFirst();
             if (choice.isPresent()) {
                 choices.put(card, choice.get());
@@ -85,10 +91,12 @@ public class GroupReplacementWithAvailability<V extends CardVersion> implements 
             }
         }
 
-        return deck.transformCards((Multiset.Entry<V> entry) -> {
-            Card card = entry.getElement().getCard();
+        return deck.transformCards((Multiset.Entry<T> entry) -> {
+            Optional<V> version = entry.getElement().getVersion();
+            if (version.isEmpty()) return null;
+            Card card = version.get().getCard();
             V choice = choices.get(card);
-            return choice == null ? null : MultisetUtil.ofSingleEntry(choice, entry.getCount());
+            return choice == null ? null : MultisetUtil.ofSingleEntry(outputCtor.apply(choice), entry.getCount());
         });
     }
 }

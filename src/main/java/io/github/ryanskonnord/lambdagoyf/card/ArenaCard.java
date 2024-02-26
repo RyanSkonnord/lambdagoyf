@@ -171,14 +171,16 @@ public final class ArenaCard implements CardVersion, Comparable<ArenaCard> {
     }
 
     public Optional<ArenaCard> fromDeckEntry(Spoiler spoiler, ArenaDeckEntry entry) {
-        String expansionCode = entry.getExpansionCode();
+        Optional<ArenaDeckEntry.EditionId> editionId = entry.getEditionId();
+        if (editionId.isEmpty()) return Optional.empty();
+        String expansionCode = editionId.get().getExpansionCode();
         Set<String> fixedCodes = REVERSE_ARENA_FIXES.get(expansionCode);
         Predicate<Expansion> expansionPredicate = fixedCodes.isEmpty()
                 ? expansion -> expansion.isNamed(expansionCode)
                 : expansion -> expansion.isNamed(expansionCode) || fixedCodes.stream().anyMatch(expansion::isNamed);
         return spoiler.lookUpByName(entry.getCardName())
                 .flatMap(card -> card.getEditions().stream()
-                        .filter(edition -> entry.getCollectorNumber() == edition.getCollectorNumber().getNumber()
+                        .filter(edition -> editionId.get().getCollectorNumber() == edition.getCollectorNumber().getNumber()
                                 && expansionPredicate.test(edition.getExpansion()))
                         .flatMap(edition -> edition.getArenaCard().stream())
                         .collect(MoreCollectors.toOptional()));
@@ -191,9 +193,9 @@ public final class ArenaCard implements CardVersion, Comparable<ArenaCard> {
 
     @Override
     public String toString() {
-        ArenaDeckEntry deckEntry = getDeckEntry();
+        ArenaDeckEntry.EditionId editionId = getDeckEntry().getEditionId().orElseThrow(RuntimeException::new);
         return String.format("%s (%s %d; ID=%s)",
-                getCardName(), deckEntry.getExpansionCode(), deckEntry.getCollectorNumber(),
+                getCardName(), editionId.getExpansionCode(), editionId.getCollectorNumber(),
                 (arenaId.isPresent() ? Long.toString(arenaId.getAsLong()) : "null"));
     }
 

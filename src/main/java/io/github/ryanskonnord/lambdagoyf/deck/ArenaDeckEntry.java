@@ -84,13 +84,6 @@ public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
         this.version = Optional.empty();
     }
 
-    public ArenaDeckEntry(ArenaCard arenaCard) {
-        CardEdition edition = arenaCard.getEdition();
-        this.cardName = arenaCard.getCard().getMainName();
-        this.editionId = Optional.of(new EditionId(edition.getExpansion().getProductCode(), edition.getCollectorNumber().getNumber()));
-        this.version = Optional.of(arenaCard);
-    }
-
     private static final Pattern ENTRY_PATTERN = Pattern.compile("(?<name>.*?)\\s+\\((?<expansionCode>\\w+?)\\)\\s+(?<number>\\d+)\\s*");
     private static final Pattern LINE_PATTERN = Pattern.compile("(?<count>\\d+)\\s+" + ENTRY_PATTERN);
 

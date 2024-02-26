@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MoreCollectors;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
@@ -34,6 +35,7 @@ import io.github.ryanskonnord.lambdagoyf.card.Card;
 import io.github.ryanskonnord.lambdagoyf.card.CardEdition;
 import io.github.ryanskonnord.lambdagoyf.card.CardEditionFace;
 import io.github.ryanskonnord.lambdagoyf.card.CardIllustration;
+import io.github.ryanskonnord.lambdagoyf.card.CardNames;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersion;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersionExtractor;
 import io.github.ryanskonnord.lambdagoyf.card.Color;
@@ -86,10 +88,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static io.github.ryanskonnord.lambdagoyf.Environment.getDeckFilePath;
 import static io.github.ryanskonnord.lambdagoyf.deck.preference.CardEditionPreferences.hasModernFrame;
@@ -438,8 +442,8 @@ public final class RyansMtgoDecks {
         };
     }
 
-    private static UnaryOperator<Deck<MtgoCard>> useSecretLairLands(ToIntFunction<MtgoCard> collectionAvailability,
-                                                                    String... artists) {
+    private static UnaryOperator<Deck<MtgoDeck.CardEntry>> useSecretLairLands(ToIntFunction<MtgoDeck.CardEntry> collectionAvailability,
+                                                                              String... artists) {
         ImmutableSet<String> artistSet = ImmutableSet.copyOf(artists);
         Predicate<MtgoCard> secretLairLands = (MtgoCard mtgoCard) -> {
             CardEdition edition = mtgoCard.getEdition();
@@ -448,12 +452,14 @@ public final class RyansMtgoDecks {
                     && edition.getExpansion().isNamed("SLD")
                     && edition.getArtists().anyMatch(artistSet::contains);
         };
+
+
         return new GroupReplacementWithAvailability<>(
-                CardVersionExtractor.getMtgoCards(), secretLairLands, collectionAvailability, 0x727088cf424f3b18L);
+                CardVersionExtractor.getMtgoCards(), MtgoDeck.CardEntry::new, secretLairLands, collectionAvailability, 0x727088cf424f3b18L);
     }
 
     private static UnaryOperator<Deck<MtgoDeck.CardEntry>> transformTo(Predicate<MtgoCard> predicate,
-                                                                       ToIntFunction<MtgoCard> collectionAvailability) {
+                                                                       ToIntFunction<MtgoDeck.CardEntry> collectionAvailability) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(collectionAvailability);
         return (Deck<MtgoDeck.CardEntry> deck) -> {
@@ -466,7 +472,7 @@ public final class RyansMtgoDecks {
                 if (version.isEmpty()) return MultisetUtil.ofSingleEntry(element, count);
                 Card card = version.get().getCard();
                 List<MtgoCard> versions = CardVersionExtractor.getMtgoCards().fromCard(card)
-                        .filter(c -> collectionAvailability.applyAsInt(c) >= count && predicate.test(c))
+                        .filter(c -> collectionAvailability.applyAsInt(new MtgoDeck.CardEntry(c)) >= count && predicate.test(c))
                         .collect(Collectors.toList());
                 if (versions.isEmpty()) return null;
                 MtgoCard chosenVersion = choice.forCard(card).choose(versions);
@@ -552,6 +558,16 @@ public final class RyansMtgoDecks {
                 .findFirst().orElseThrow();
     }
 
+    private static Function<Card, Stream<MtgoDeck.CardEntry>> getFallbackFunction(Multiset<MtgoDeck.CardEntry> collection) {
+        Multimap<String, MtgoDeck.CardEntry> fallbackVersions = collection.elementSet().stream()
+                .filter(e -> e.getVersion().isEmpty())
+                .sorted(Comparator.comparing(MtgoDeck.CardEntry::getId))
+                .collect(MapCollectors.<MtgoDeck.CardEntry>collecting()
+                        .indexing(e -> CardNames.normalize(e.getName()))
+                        .grouping().toImmutableSetMultimap());
+        return (Card card) -> fallbackVersions.get(CardNames.normalize(card.getMainName())).stream();
+    }
+
     public static void main(String[] args) throws Exception {
         Spoiler spoiler = ScryfallParser.createSpoiler();
 
@@ -561,14 +577,15 @@ public final class RyansMtgoDecks {
         ToIntFunction<MtgoDeck.CardEntry> collectionAvailability = myCollection::count;
 
         BasicLandPreferenceSequence.Context<MtgoCard> basicLandPreferenceContext = new BasicLandPreferenceSequence.Context<>(
-                spoiler, CardVersionExtractor.getMtgoCards(), collectionAvailability);
+                spoiler, CardVersionExtractor.getMtgoCards(), c -> myCollection.count(new MtgoDeck.CardEntry(c)));
 
         Path constructedDirectory = getDeckFilePath().resolve("Constructed");
         Path allDirectory = constructedDirectory.resolve("All");
         Files.createDirectories(allDirectory);
         for (DeckFormatDirectory directory : EnumSet.allOf(DeckFormatDirectory.class)) {
             DeckConstructor<MtgoCard, MtgoDeck.CardEntry> deckConstructor = DeckConstructor.createForMtgo()
-                    .setAvailability(collectionAvailability)
+                    .setAvailableCollection(myCollection)
+                    .withFallback(getFallbackFunction(myCollection))
 
                     .withPreferenceOrder().override(directory.getPreference())
                     .withOverflowOver().override(DEFAULT_OVERFLOW)

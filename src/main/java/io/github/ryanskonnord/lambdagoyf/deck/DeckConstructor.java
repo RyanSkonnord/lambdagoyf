@@ -19,6 +19,7 @@
 
 package io.github.ryanskonnord.lambdagoyf.deck;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
@@ -40,7 +41,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @param <V>
@@ -58,13 +59,13 @@ public final class DeckConstructor<V extends CardVersion, T extends DeckElement<
 
     private final CardVersionExtractor<V> versionExtractor;
     private final Function<? super V, T> outputConstructor;
-    private final ToIntFunction<? super V> availability;
+    private final ToIntFunction<? super T> availability;
     private final Comparator<V> preference;
     private final Comparator<V> overflow;
     private final UnaryOperator<Deck<Card>> deckTransformation;
     private final UnaryOperator<V> cardVersionTransformation;
     private final UnaryOperator<Deck<T>> outputTransformation;
-    private final Function<Card, Optional<T>> fallback;
+    private final Function<Card, Stream<T>> fallback;
 
     private DeckConstructor(Builder<V, T> builder) {
         this.versionExtractor = Objects.requireNonNull(builder.versionExtractor);
@@ -81,25 +82,25 @@ public final class DeckConstructor<V extends CardVersion, T extends DeckElement<
     public static final class Builder<V extends CardVersion, T extends DeckElement<V>> {
         private final CardVersionExtractor<V> versionExtractor;
         private final Function<? super V, T> outputConstructor;
-        private ToIntFunction<? super V> availability = getUnlimitedAvailability();
+        private ToIntFunction<? super T> availability = getUnlimitedAvailability();
         private ComparatorMutator<V, Builder<V, T>> preference = new ComparatorMutator<>(this);
         private ComparatorMutator<V, Builder<V, T>> overflow = new ComparatorMutator<>(this);
         private UnaryOperator<Deck<Card>> deckTransformation = UnaryOperator.identity();
         private UnaryOperator<V> cardVersionTransformation = UnaryOperator.identity();
         private UnaryOperator<Deck<T>> outputTransformation = UnaryOperator.identity();
-        private Function<Card, Optional<T>> fallback = card -> Optional.empty();
+        private Function<Card, Stream<T>> fallback = card -> Stream.empty();
 
         private Builder(CardVersionExtractor<V> versionExtractor, Function<? super V, T> outputConstructor) {
             this.versionExtractor = Objects.requireNonNull(versionExtractor);
             this.outputConstructor = Objects.requireNonNull(outputConstructor);
         }
 
-        public Builder<V, T> setAvailability(ToIntFunction<? super V> availability) {
+        public Builder<V, T> setAvailability(ToIntFunction<? super T> availability) {
             this.availability = Objects.requireNonNull(availability);
             return this;
         }
 
-        public Builder<V, T> setAvailableCollection(Multiset<? extends V> collection) {
+        public Builder<V, T> setAvailableCollection(Multiset<? extends T> collection) {
             return setAvailability(collection::count);
         }
 
@@ -126,7 +127,7 @@ public final class DeckConstructor<V extends CardVersion, T extends DeckElement<
             return this;
         }
 
-        public Builder<V, T> withFallback(Function<Card, Optional<T>> fallback) {
+        public Builder<V, T> withFallback(Function<Card, Stream<T>> fallback) {
             this.fallback = Objects.requireNonNull(fallback);
             return this;
         }
@@ -160,15 +161,19 @@ public final class DeckConstructor<V extends CardVersion, T extends DeckElement<
                 .withPreferenceOrder().set(getDefaultOrder());
     }
 
-    public static Builder<ArenaCard, ArenaCard> createForArena() {
+    public static Builder<ArenaCard, ArenaDeckEntry> createForArena() {
         Comparator<ArenaCard> defaultOrder = Comparator
                 .comparing((ArenaCard arenaCard) -> arenaCard.getEdition().getExpansion()
                         .getType().getEnum().filter(ExpansionType::isStandardRelease).isEmpty())
                 .thenComparing(Comparator.comparing(ArenaCard::getEdition).reversed());
-        return new Builder<>(CardVersionExtractor.getArenaCard(), Function.identity())
+        return new Builder<>(CardVersionExtractor.getArenaCard(), ArenaCard::getDeckEntry)
                 .withPreferenceOrder().set(defaultOrder);
     }
 
+
+    private T transformCardVersion(T element) {
+        return element.getVersion().map(cardVersionTransformation).map(outputConstructor).orElse(element);
+    }
 
     public Deck<T> createDeck(Deck<Card> unversionedDeck) {
         Deck<Card> transformedDeck = deckTransformation.apply(unversionedDeck);
@@ -179,21 +184,25 @@ public final class DeckConstructor<V extends CardVersion, T extends DeckElement<
         return outputTransformation.apply(versionedDeck);
     }
 
-    private T transformCardVersion(T element) {
-        return element.getVersion().map(cardVersionTransformation).map(outputConstructor).orElse(element);
+    private Comparator<T> comparingVersions(Comparator<V> versionComparator) {
+        return Comparator.nullsLast(Comparator.comparing(t -> t.getVersion().orElse(null), versionComparator));
     }
 
     private static final ImmutableSet<Deck.Section> DECK_SECTIONS = Sets.immutableEnumSet(EnumSet.allOf(Deck.Section.class));
 
     private Deck<T> chooseVersion(Deck.Entry<Card> entry) {
         Card card = entry.getCard();
+        ImmutableSet<T> allVersions = Stream.concat(
+                versionExtractor.fromCard(card).map(outputConstructor),
+                fallback.apply(card)
+        ).collect(ImmutableSet.toImmutableSet());
 
-        Optional<V> favoriteAvailableVersion = versionExtractor.fromCard(card)
-                .filter((V version) -> availability.applyAsInt(version) >= entry.getTotal())
-                .min(preference);
+        Optional<T> favoriteAvailableVersion = allVersions.stream()
+                .filter((T version) -> availability.applyAsInt(version) >= entry.getTotal())
+                .min(comparingVersions(preference));
         if (favoriteAvailableVersion.isPresent()) {
             Deck.Builder<T> builder = new Deck.Builder<>();
-            T output = outputConstructor.apply(favoriteAvailableVersion.get());
+            T output = favoriteAvailableVersion.get();
             for (Deck.Section section : DECK_SECTIONS) {
                 builder.addTo(section, output, entry.getNumberIn(section));
             }
@@ -202,21 +211,20 @@ public final class DeckConstructor<V extends CardVersion, T extends DeckElement<
 
         // Else, there are not enough copies of any one version to match.
         Deck.Builder<T> accumulation = new Deck.Builder<>();
-        List<V> orderedVersions = versionExtractor.fromCard(card)
-                .filter((V version) -> availability.applyAsInt(version) > 0)
-                .sorted(preference)
-                .collect(Collectors.toList());
+        List<T> orderedVersions = allVersions.stream()
+                .filter((T version) -> availability.applyAsInt(version) > 0)
+                .sorted(comparingVersions(preference))
+                .collect(ImmutableList.toImmutableList());
 
         // First, fill the sections with matching groups of cards. Iterate over the sections in descending order of
         // importance, and use whichever version has enough cards to match, if any.
         for (Deck.Section section : DECK_SECTIONS) {
             int numberWanted = entry.getNumberIn(section);
             if (numberWanted == 0) continue;
-            for (V version : orderedVersions) {
-                T output = outputConstructor.apply(version);
-                int numberAvailable = availability.applyAsInt(version) - accumulation.getTotalCopiesOf(output);
+            for (T version : orderedVersions) {
+                int numberAvailable = availability.applyAsInt(version) - accumulation.getTotalCopiesOf(version);
                 if (numberAvailable >= numberWanted) {
-                    accumulation.addTo(section, output, numberWanted);
+                    accumulation.addTo(section, version, numberWanted);
                     break;
                 }
             }
@@ -224,32 +232,21 @@ public final class DeckConstructor<V extends CardVersion, T extends DeckElement<
         if (accumulation.getSize() == entry.getTotal()) return accumulation.build();
 
         // Then, use whatever is available in preferred order, with mismatched groups if necessary.
-        for (V version : orderedVersions) {
-            T output = outputConstructor.apply(version);
-            int numberAvailable = availability.applyAsInt(version) - accumulation.getTotalCopiesOf(output);
+        for (T version : orderedVersions) {
+            int numberAvailable = availability.applyAsInt(version) - accumulation.getTotalCopiesOf(version);
             for (Deck.Section section : DECK_SECTIONS) {
                 int numberWanted = entry.getNumberIn(section) - accumulation.get(section).size();
                 int numberToAdd = Math.min(numberAvailable, numberWanted);
-                accumulation.addTo(section, output, numberToAdd);
+                accumulation.addTo(section, version, numberToAdd);
                 numberAvailable -= numberToAdd;
             }
         }
         if (accumulation.getSize() == entry.getTotal()) return accumulation.build();
 
-        // In case we still didn't find enough available copies, add copies not in the collection.
-        final T overflowVersion;
-        if (!orderedVersions.isEmpty()) {
-            // If we have some copies but not enough, add more copies of the favorite available version.
-            overflowVersion = outputConstructor.apply(orderedVersions.get(0));
-        } else {
-            // If we know of versions that exist, choose the one preferred by overflow logic.
-            overflowVersion = versionExtractor.fromCard(card).min(overflow).map(outputConstructor)
-                    // No versions are known from the spoiler. Apply an output-only fallback version if possible.
-                    .orElseGet(() -> fallback.apply(card)
-                            // No versions can be found at all. Maybe the card name is invalid.
-                            .orElseThrow(() -> new CardVersionNotFoundException(card)));
-        }
-
+        // In case we still didn't find enough available copies, add unavailable copies using overflow logic.
+        T overflowVersion = !orderedVersions.isEmpty() ? orderedVersions.get(0) :
+                allVersions.stream().min(comparingVersions(overflow))
+                        .orElseThrow(() -> new CardVersionNotFoundException(card));
         for (Deck.Section section : DECK_SECTIONS) {
             int numberOfOverflowCopies = entry.getNumberIn(section) - accumulation.get(section).size();
             accumulation.addTo(section, overflowVersion, numberOfOverflowCopies);
