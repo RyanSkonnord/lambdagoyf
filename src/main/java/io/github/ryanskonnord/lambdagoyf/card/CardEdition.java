@@ -103,7 +103,7 @@ public final class CardEdition extends ScryfallEntity
         isFullArt = entry.isFullArt();
 
         paperFinishes = factory.cacheFinishSet(buildPaperFinishes(entry));
-        arenaCard = ArenaCard.create(this, entry.getArenaId(), factory.getArenaFixes()).orElse(null);
+        arenaCard = factory.getArenaFactory().create(this, entry.getArenaId()).orElse(null);
 
         MtgoCard[] mtgoCards = buildMtgoCards(entry, factory.getMtgoFixes());
         mtgoNonfoil = mtgoCards[0];

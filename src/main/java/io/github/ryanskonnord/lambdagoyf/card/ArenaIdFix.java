@@ -63,7 +63,7 @@ public abstract class ArenaIdFix {
         private final ArenaVersionId replacement;
 
         private OverrideVersionId(String expansionCode, int collectorNumber) {
-            this.replacement = new ArenaVersionId(expansionCode,collectorNumber);
+            this.replacement = new ArenaVersionId(expansionCode, collectorNumber);
         }
 
         @Override
@@ -95,9 +95,9 @@ public abstract class ArenaIdFix {
 
         @Override
         public Optional<ArenaCard> setUpArenaCard(CardEdition edition, OptionalLong arenaId) {
-            return exists
-                    ? Optional.of(new ArenaCard(edition, arenaId))
-                    : Optional.empty();
+            if (!exists) return Optional.empty();
+            ArenaVersionId versionId = new ArenaVersionId(edition.getExpansion().getProductCode(), edition.getCollectorNumber().getNumber());
+            return Optional.of(new ArenaCard(edition, arenaId, versionId));
         }
 
         @Override

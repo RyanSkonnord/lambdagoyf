@@ -111,18 +111,10 @@ public final class Spoiler {
     }
 
     private static ImmutableMap<String, Card> buildNameDictionary(Collection<Card> cards) {
-        Multimap<String, Card> groupedByCardName = MultimapBuilder.hashKeys(cards.size()).arrayListValues(1).build();
-        for (Card card : cards) {
-            if (!card.isExtra()) {
-                groupedByCardName.put(card.getFullName(), card);
-            }
-        }
-        Iterable<Card> uniquelyNamedCards = () -> groupedByCardName.asMap().values().stream()
-                .filter(group -> group.size() == 1)
-                .map(Iterables::getOnlyElement)
-                .iterator();
-
         Map<String, Card> names = Maps.newHashMapWithExpectedSize(9 * cards.size());
+        SetMultimap<String, Card> byPrintedName = MultimapBuilder.hashKeys(8 * cards.size()).hashSetValues(2).build();
+
+        Collection<Card> uniquelyNamedCards = getUniquelyNamedCards(cards).collect(ImmutableList.toImmutableList());
         for (Card card : uniquelyNamedCards) {
             String name = normalize(card.getFullName());
             names.put(name, card);
@@ -134,7 +126,6 @@ public final class Spoiler {
             }
         }
 
-        SetMultimap<String, Card> byPrintedName = MultimapBuilder.hashKeys(8 * cards.size()).hashSetValues(2).build();
         for (Card card : uniquelyNamedCards) {
             Iterable<String> printedNames = () -> card.getAllNames().map(CardNames::normalize).iterator();
             for (String printedName : printedNames) {
@@ -155,6 +146,28 @@ public final class Spoiler {
                 .sorted(Comparator.comparing((Map.Entry<String, Card> e) -> e.getValue())
                         .thenComparing(Map.Entry::getKey))
                 .collect(MapCollectors.<String, Card>collectingEntries().unique().toImmutableMap());
+    }
+
+    private static Stream<Card> getUniquelyNamedCards(Collection<Card> cards) {
+        Multimap<String, Card> groupedByCardName = MultimapBuilder.hashKeys(cards.size()).arrayListValues(1).build();
+        for (Card card : cards) {
+            if (!card.isExtra()) {
+                groupedByCardName.put(card.getFullName(), card);
+            }
+        }
+        return groupedByCardName.asMap().values().stream().map(Spoiler::chooseSignificantCard);
+    }
+
+    /**
+     * Disambiguate among playtest card names that were later reused for real cards, such as Red Herring and
+     * Pick Your Poison.
+     */
+    private static Card chooseSignificantCard(Collection<Card> cards) {
+        if (cards.size() == 1) return cards.iterator().next();
+        Collection<Card> significantCards = cards.stream().filter(c -> !c.isExtra() && !c.isFunny())
+                .collect(Collectors.toList());
+        if (significantCards.size() == 1) return significantCards.iterator().next();
+        return cards.stream().min(Comparator.naturalOrder()).orElseThrow(IllegalArgumentException::new);
     }
 
     private static ImmutableBiMap<Long, MtgoCard> buildMtgoIdMap(Collection<Card> cards) {

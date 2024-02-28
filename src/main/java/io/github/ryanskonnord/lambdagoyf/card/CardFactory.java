@@ -39,10 +39,10 @@ public final class CardFactory {
 
     private final ExpansionSpoiler expansions;
     private final ImmutableMultimap<UUID, ScryfallCardEntry> entries;
+    private final ArenaCard.Factory arenaFactory;
 
     private final CardLegality.Factory legalityFactory = new CardLegality.Factory();
     private final MtgoIdFix.Registry mtgoFixes = MtgoIdFix.loadFromResources();
-    private final ArenaIdFix.Registry arenaFixes = ArenaIdFix.loadFromResources();
     private final TypeLineCache typeLineCache = new TypeLineCache();
     private final Cache<ImmutableSet<Finish>, ImmutableSet<Finish>> finishSetCache = CacheBuilder.newBuilder()
             .maximumSize(9).build();
@@ -54,6 +54,7 @@ public final class CardFactory {
         this.entries = entries.stream().collect(MapCollectors.<ScryfallCardEntry>collecting()
                 .indexing(ScryfallCardEntry::getOracleId)
                 .grouping().toImmutableListMultimap());
+        this.arenaFactory = new ArenaCard.Factory(ArenaIdFix.loadFromResources(), this.expansions);
     }
 
     public Spoiler createSpoiler() {
@@ -76,8 +77,8 @@ public final class CardFactory {
         return mtgoFixes;
     }
 
-    ArenaIdFix.Registry getArenaFixes() {
-        return arenaFixes;
+    ArenaCard.Factory getArenaFactory() {
+        return arenaFactory;
     }
 
     TypeLine getCachedTypeLine(TypeLine value) {

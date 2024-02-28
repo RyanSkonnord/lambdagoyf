@@ -197,6 +197,10 @@ public final class Card extends ScryfallEntity
                 || editions.stream().anyMatch(v -> v.getExpansion().getType().is(ExpansionType.TOKEN));
     }
 
+    public boolean isFunny() {
+        return editions.stream().allMatch(e -> e.getExpansion().getType().is(ExpansionType.FUNNY));
+    }
+
     public boolean isReserved() {
         return isReserved;
     }
