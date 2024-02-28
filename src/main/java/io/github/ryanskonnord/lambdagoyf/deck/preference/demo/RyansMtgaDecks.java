@@ -50,6 +50,7 @@ import io.github.ryanskonnord.lambdagoyf.card.field.Rarity;
 import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckEntry;
 import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckFormatter;
 import io.github.ryanskonnord.lambdagoyf.deck.ArenaDeckSeeker;
+import io.github.ryanskonnord.lambdagoyf.deck.ArenaVersionId;
 import io.github.ryanskonnord.lambdagoyf.deck.CommanderLegality;
 import io.github.ryanskonnord.lambdagoyf.deck.CompanionLegality;
 import io.github.ryanskonnord.lambdagoyf.deck.Deck;
@@ -389,21 +390,26 @@ public final class RyansMtgaDecks {
     }
 
     private static Comparator<ArenaCard> preferArenaEntries(Collection<String>... favoriteSteps) {
-        Map<String, ArenaDeckEntry> parsedEntries = new HashMap<>();
+        Map<String, ArenaVersionId> parsedEntries = new HashMap<>();
         for (Collection<String> step : favoriteSteps) {
-            ImmutableMap<String, ArenaDeckEntry> mapForStep = step.stream()
+            ImmutableMap<String, ArenaVersionId> mapForStep = step.stream()
                     .map(entry -> ArenaDeckEntry.parse(entry).orElseThrow(() ->
                             new IllegalArgumentException("Arena deck entry not recognized: " + entry)))
                     .collect(MapCollectors.<ArenaDeckEntry>collecting()
-                            .indexing(ArenaDeckEntry::getCardName)
+                            .withKey(ArenaDeckEntry::getCardName)
+                            .withValue(e -> e.getVersionId().orElseThrow(() ->
+                                    new IllegalArgumentException("Provided entries must contain version IDs")))
                             .uniqueOrElseThrow((x1, x2) -> new RuntimeException(String.format("Collision: %s; %s", x1, x2)))
                             .toImmutableMap());
 
             parsedEntries.putAll(mapForStep); // later collections override earlier ones
         }
 
-        ImmutableSet<ArenaDeckEntry> favorites = ImmutableSet.copyOf(parsedEntries.values());
-        return Comparator.comparing((ArenaCard arenaCard) -> !favorites.contains(arenaCard.getDeckEntry()));
+        ImmutableSet<ArenaVersionId> favorites = ImmutableSet.copyOf(parsedEntries.values());
+        return Comparator.comparing((ArenaCard arenaCard) -> {
+            Optional<ArenaVersionId> versionId = arenaCard.getDeckEntry().getVersionId();
+            return versionId.isEmpty() || !favorites.contains(versionId.get());
+        });
     }
 
     public static void stripMtgGoldfishPrefixes(Path sourceDirectory) throws IOException {
