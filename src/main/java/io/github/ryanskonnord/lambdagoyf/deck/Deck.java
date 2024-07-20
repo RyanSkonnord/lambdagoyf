@@ -27,11 +27,13 @@ import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
+import com.google.common.collect.TreeMultiset;
 import io.github.ryanskonnord.lambdagoyf.card.Card;
 import io.github.ryanskonnord.lambdagoyf.card.CardEdition;
 import io.github.ryanskonnord.lambdagoyf.card.CardIdentity;
 import io.github.ryanskonnord.lambdagoyf.card.CardVersion;
 import io.github.ryanskonnord.util.MapCollectors;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -135,6 +137,13 @@ public final class Deck<C> {
 
     public static <C> Deck<C> createSimpleDeck(Collection<? extends C> cards) {
         return new Deck<>(ImmutableMap.of(Section.MAIN_DECK, ImmutableMultiset.copyOf(cards)));
+    }
+    public static <C> Deck<C> createSimpleDeck(Collection<? extends C> cards, int copiesOfEach) {
+        Multiset<C> multiset = LinkedHashMultiset.create(cards.size());
+        for (C card : cards) {
+            multiset.add(card, copiesOfEach);
+        }
+        return new Deck<>(ImmutableMap.of(Section.MAIN_DECK, multiset));
     }
 
 

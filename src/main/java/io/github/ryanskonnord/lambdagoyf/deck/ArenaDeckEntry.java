@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 
 public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
 
-
     private final String cardName;
     private final Optional<ArenaVersionId> versionId;
     private final Optional<ArenaCard> version;

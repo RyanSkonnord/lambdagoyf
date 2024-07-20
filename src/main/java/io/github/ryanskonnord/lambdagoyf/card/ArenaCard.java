@@ -22,7 +22,6 @@ package io.github.ryanskonnord.lambdagoyf.card;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import io.github.ryanskonnord.lambdagoyf.card.field.BorderColor;
@@ -42,8 +41,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
-import java.util.Set;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -184,21 +181,6 @@ public final class ArenaCard implements CardVersion, Comparable<ArenaCard> {
 
     public ArenaDeckEntry getDeckEntry() {
         return (deckEntry != null) ? deckEntry : (deckEntry = new ArenaDeckEntry(this));
-    }
-
-    public static Optional<ArenaCard> lookUp(Spoiler spoiler, String name, ArenaVersionId versionId) {
-        return null;
-//        String expansionCode = versionId.getExpansionCode();
-//        Set<String> fixedCodes = REVERSE_ARENA_FIXES.get(expansionCode);
-//        Predicate<Expansion> expansionPredicate = fixedCodes.isEmpty()
-//                ? expansion -> expansion.isNamed(expansionCode)
-//                : expansion -> expansion.isNamed(expansionCode) || fixedCodes.stream().anyMatch(expansion::isNamed);
-//        return spoiler.lookUpByName(name)
-//                .flatMap(card -> card.getEditions().stream()
-//                        .filter(edition -> versionId.getCollectorNumber() == edition.getCollectorNumber().getNumber()
-//                                && expansionPredicate.test(edition.getExpansion()))
-//                        .flatMap(edition -> edition.getArenaCard().stream())
-//                        .collect(MoreCollectors.toOptional()));
     }
 
     @Override
