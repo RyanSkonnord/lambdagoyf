@@ -175,6 +175,22 @@ public final class RyansMtgaDecks {
                 .collect(ImmutableList.toImmutableList());
     }
 
+    private static ImmutableList<ImmutableSet<ArenaCard>> getStandardFullArtBasics(Spoiler spoiler) {
+        LocalDate cutoff = spoiler.getExpansion("DMU").orElseThrow(RuntimeException::new).getReleaseDate();
+        return spoiler.getExpansions().stream()
+                .filter(expansion -> expansion.getType().isOneOf(ExpansionType.EXPANSION, ExpansionType.CORE)
+                        && !expansion.getReleaseDate().isBefore(cutoff))
+                .flatMap((Expansion expansion) -> {
+                    ImmutableSet<ArenaCard> group = spoiler.getAllFromExpansion(expansion).stream()
+                            .flatMap(e -> e.getArenaCard().stream())
+                            .filter(c -> c.getCard().getMainTypeLine().is(BASIC) && c.getEdition().isFullArt())
+                            .collect(ImmutableSet.toImmutableSet());
+                    return Optional.of(group).filter(g -> !g.isEmpty()).stream();
+                })
+                .collect(ImmutableList.toImmutableList());
+    }
+
+
     public static UnaryOperator<Deck<ArenaCard>> chooseHappyAccidents(Spoiler spoiler) {
         ImmutableSetMultimap<Card, ArenaCard> versionMap = CardVersionExtractor.getArenaCard().getAll(spoiler)
                 .filter(c -> c.getEdition().hasArtist("Bob Ross"))

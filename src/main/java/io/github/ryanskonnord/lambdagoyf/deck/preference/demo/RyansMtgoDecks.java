@@ -62,6 +62,7 @@ import io.github.ryanskonnord.lambdagoyf.deck.MtgoDeck;
 import io.github.ryanskonnord.lambdagoyf.deck.MtgoDeckFormatter;
 import io.github.ryanskonnord.lambdagoyf.deck.PreferenceBuilder;
 import io.github.ryanskonnord.lambdagoyf.deck.preference.BasicLandPreferenceSequence;
+import io.github.ryanskonnord.lambdagoyf.deck.preference.BasicLandReplacer;
 import io.github.ryanskonnord.lambdagoyf.deck.preference.GroupReplacementWithAvailability;
 import io.github.ryanskonnord.lambdagoyf.scryfall.ScryfallParser;
 import io.github.ryanskonnord.util.MapCollectors;
@@ -94,6 +95,7 @@ import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static io.github.ryanskonnord.lambdagoyf.Environment.getDeckFilePath;
@@ -154,6 +156,13 @@ public final class RyansMtgoDecks {
         return (CardEdition edition) -> edition.getFaces().stream()
                 .map(CardEditionFace::getArtist).flatMap(Optional::stream)
                 .anyMatch(artistNameSet::contains);
+    }
+
+    private static Collection<MtgoCard> fromMtgoIds(Spoiler spoiler, long... ids) {
+        return LongStream.of(ids)
+                .mapToObj(id -> spoiler.lookUpByMtgoId(id)
+                        .orElseThrow(() -> new IllegalArgumentException("Unmatched ID: " + id)))
+                .collect(Collectors.toList());
     }
 
     private static Predicate<MtgoCard> hasMtgoId(long id) {
@@ -262,6 +271,16 @@ public final class RyansMtgoDecks {
     private static final Predicate<MtgoCard> isDominariaPromoLand = hasMtgoIdInRange(40092, 40101);
     private static final Predicate<MtgoCard> isJumpstartLand = hasMtgoIdInRange(53875, 81909);
 
+    private static final BasicLandReplacer<MtgoCard> mh3LandscapeBasics(Spoiler spoiler) {
+        return BasicLandReplacer.fromVersionsChosenRandomly(fromMtgoIds(spoiler,
+                79044, 79046, 79048, 79050, 79052, 126477, 126593, 126595, 126597,
+                126599, 126601, 126603, 126605, 126607, 126609, 126611, 127361));
+    }
+
+    private static final BasicLandReplacer<MtgoCard> mh3FullFrameBasics(Spoiler spoiler) {
+        return BasicLandReplacer.fromVersions(fromMtgoIds(spoiler,
+                59323, 59605, 72872, 72874, 72876, 72878, 72880, 126613, 126615, 126617, 126619, 126621, 126623));
+    }
 
     private static Predicate<MtgoCard> isBasicLandFromSet(String expansionName, String artist) {
         return onEdition(e -> e.getCard().getMainTypeLine().is(CardSupertype.BASIC) && e.getExpansion().isNamed(expansionName)
@@ -496,9 +515,7 @@ public final class RyansMtgoDecks {
         private final String formatTag;
         private final Format format;
 
-        DeckFormatDirectory(String directoryName,
-                            String formatTag,
-                            Format format) {
+        DeckFormatDirectory(String directoryName, String formatTag, Format format) {
             this.directoryName = Objects.requireNonNull(directoryName);
             this.formatTag = Optional.ofNullable(formatTag).orElse(directoryName.substring(0, 3));
             this.format = Objects.requireNonNull(format);
@@ -569,6 +586,15 @@ public final class RyansMtgoDecks {
         return (Card card) -> fallbackVersions.get(CardNames.normalize(card.getMainName())).stream();
     }
 
+    private static UnaryOperator<Deck<MtgoDeck.CardEntry>> adaptTransformation(UnaryOperator<Deck<MtgoCard>> transformation) {
+        Objects.requireNonNull(transformation);
+        return (Deck<MtgoDeck.CardEntry> deck) -> {
+            Deck<MtgoCard> coerced = MtgoDeck.coerce(deck);
+            Deck<MtgoCard> transformed = transformation.apply(coerced);
+            return transformed.transform(MtgoDeck.CardEntry::new);
+        };
+    }
+
     public static void main(String[] args) throws Exception {
         Spoiler spoiler = ScryfallParser.createSpoiler();
 
@@ -592,7 +618,7 @@ public final class RyansMtgoDecks {
                     .withOverflowOver().override(DEFAULT_OVERFLOW)
                     .addDeckTransformation(deck -> CompanionLegality.addMissingCompanion(spoiler, deck, directory.format))
 //                    .addDeckTransformation(snowConversion::convertWithFieldBluff)
-                    .addDeckTransformation(snowConversion::removeSuperfluousSnowLands)
+//                    .addDeckTransformation(snowConversion::removeSuperfluousSnowLands)
                     .addDeckTransformation(directory.allowsSnow() ? winterCheer::convertSeasonally : UnaryOperator.identity())
                     .addOutputTransformation(d -> getBasicLandPreference(basicLandPreferenceContext, directory).apply(d, MtgoDeck.CardEntry::new))
 //                    .addVersionTransformation(adjustForAbnormalBasics())
@@ -602,6 +628,10 @@ public final class RyansMtgoDecks {
                             ? useKaldheimSnowLands(spoiler)
                             : transformTo(useModernHorizonsSnowLands(), collectionAvailability))
                     .addOutputTransformation(useSecretLairLands(collectionAvailability, "Alayna Danner"))
+
+                    .addOutputTransformation(directory == DeckFormatDirectory.MODERN
+                            ? adaptTransformation(mh3LandscapeBasics(spoiler))
+                            : UnaryOperator.identity())
                     .build();
             Path root = constructedDirectory.resolve(directory.directoryName);
             Files.createDirectories(root);

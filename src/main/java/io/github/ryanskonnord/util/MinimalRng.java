@@ -24,13 +24,17 @@ import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public interface MinimalRng {
 
     public int generateInt(int bound);
 
     public default <E> E choose(Collection<E> collection) {
-        return Iterables.get(collection, generateInt(collection.size()));
+        int size = collection.size();
+        if (size <= 0) throw new NoSuchElementException();
+        int position = (size == 1) ? 0 : generateInt(size);
+        return Iterables.get(collection, position);
     }
 
     public default <E> List<E> shuffle(Collection<E> collection) {

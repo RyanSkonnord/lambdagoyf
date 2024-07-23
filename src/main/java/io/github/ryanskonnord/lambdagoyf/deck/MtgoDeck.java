@@ -19,6 +19,7 @@
 
 package io.github.ryanskonnord.lambdagoyf.deck;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -71,6 +72,15 @@ public class MtgoDeck {
 
         public Optional<MtgoCard> getVersion() {
             return version;
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("name", name)
+                    .add("id", id)
+                    .add("version", version.orElse(null))
+                    .toString();
         }
 
         @Override
@@ -172,6 +182,11 @@ public class MtgoDeck {
             builder.addTo(section, entry.getCard(), entry.getQuantity());
         }
         return builder.build();
+    }
+
+    public static Deck<MtgoCard> coerce(Deck<CardEntry> deck) {
+        return deck.transform((CardEntry cardEntry) -> cardEntry.getVersion().orElseThrow(() ->
+                new RuntimeException("No card object found for: " + cardEntry)));
     }
 
     public ImmutableSet<CardEntry> getEntriesForName(String cardName) {
