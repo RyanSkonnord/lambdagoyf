@@ -81,9 +81,9 @@ public class ArenaWildcardSpender {
     public static void main(String[] args) throws Exception {
         Spoiler spoiler = ScryfallParser.createSpoiler();
         ArenaWildcardSpender spender = new ArenaWildcardSpender(spoiler);
-        Expansion mh3 = spoiler.getExpansion("MH3").orElseThrow();
-        Collection<Deck<ArenaCard>> commons = spender.createDecks(mh3, Rarity.COMMON, 504);
-        Collection<Deck<ArenaCard>> uncommons = spender.createDecks(mh3, Rarity.UNCOMMON, 675);
+        Expansion mh3 = spoiler.getExpansion("Bloomburrow").orElseThrow();
+        Collection<Deck<ArenaCard>> commons = spender.createDecks(mh3, Rarity.COMMON, 192);
+        Collection<Deck<ArenaCard>> uncommons = spender.createDecks(mh3, Rarity.UNCOMMON, 207);
         try (OutputStreamWriter writer = new OutputStreamWriter(System.out)) {
             for (Deck<ArenaCard> deck : Iterables.concat(commons, uncommons)) {
                 ArenaDeckFormatter.write(writer, deck.transform(ArenaDeckEntry::new));

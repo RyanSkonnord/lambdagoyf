@@ -151,7 +151,7 @@ public final class Deck<C> {
 
     private Deck(Map<Section, Multiset<C>> sectionMap) {
         Map<Section, ImmutableMultiset<C>> builder = new EnumMap<>(Section.class);
-        for (Map.Entry<Section, ? extends Collection<C>> entry : sectionMap.entrySet()) {
+        for (Map.Entry<Section, Multiset<C>> entry : sectionMap.entrySet()) {
             ImmutableMultiset<C> cards = ImmutableMultiset.copyOf(entry.getValue());
             if (!cards.isEmpty()) {
                 builder.put(entry.getKey(), cards);
