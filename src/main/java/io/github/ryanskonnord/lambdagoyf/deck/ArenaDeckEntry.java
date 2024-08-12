@@ -34,7 +34,7 @@ public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
     private final Optional<ArenaVersionId> versionId;
     private final Optional<ArenaCard> version;
 
-    public ArenaDeckEntry(String cardName) {
+    private ArenaDeckEntry(String cardName) {
         this.cardName = Objects.requireNonNull(cardName);
         this.versionId = Optional.empty();
         this.version = Optional.empty();
@@ -56,6 +56,10 @@ public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
     private static final Pattern ENTRY_PATTERN = Pattern.compile("(?<name>.*?)(\\s+\\((?<expansionCode>\\w+?)\\)\\s+(?<number>\\d+))?\\s*");
     private static final Pattern LINE_PATTERN = Pattern.compile("(?<count>\\d+)\\s+" + ENTRY_PATTERN);
 
+    public static ArenaDeckEntry fromSimpleCardName(String cardName) {
+        return new ArenaDeckEntry(cardName);
+    }
+
     public static Optional<ArenaDeckEntry> parse(String entry) {
         Matcher matcher = ENTRY_PATTERN.matcher(entry);
         if (!matcher.matches()) return Optional.empty();
@@ -68,6 +72,7 @@ public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
                 : Optional.of(new ArenaDeckEntry(name, expansionCode, Integer.parseInt(number)));
     }
 
+    @Override
     public String getCardName() {
         return cardName;
     }
@@ -90,11 +95,11 @@ public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
     public boolean equals(Object o) {
         return this == o || o != null && getClass() == o.getClass()
                 && cardName.equals(((ArenaDeckEntry) o).cardName)
-                && version.equals(((ArenaDeckEntry) o).version);
+                && versionId.equals(((ArenaDeckEntry) o).versionId);
     }
 
     @Override
     public int hashCode() {
-        return 31 * version.hashCode() + cardName.hashCode();
+        return 31 * versionId.hashCode() + cardName.hashCode();
     }
 }

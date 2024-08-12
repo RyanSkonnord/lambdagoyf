@@ -62,7 +62,8 @@ public class MtgoDeck {
             this(getMtgoName(version.getCard()), version.getMtgoId(), Optional.of(version));
         }
 
-        public String getName() {
+        @Override
+        public String getCardName() {
             return name;
         }
 
@@ -106,6 +107,11 @@ public class MtgoDeck {
             this.quantity = quantity;
             this.card = Objects.requireNonNull(card);
             this.isInSideboard = isInSideboard;
+        }
+
+        @Override
+        public String getCardName() {
+            return card.getCardName();
         }
 
         public int getQuantity() {
@@ -166,7 +172,7 @@ public class MtgoDeck {
         this.entries = ImmutableList.copyOf(entries);
         this.cardsByName = this.entries.stream().map(DeckEntry::getCard)
                 .collect(MapCollectors.<CardEntry>collecting()
-                        .indexing(e -> CardNames.normalize(e.getName()))
+                        .indexing(e -> CardNames.normalize(e.getCardName()))
                         .grouping().toImmutableSetMultimap()
                 );
     }

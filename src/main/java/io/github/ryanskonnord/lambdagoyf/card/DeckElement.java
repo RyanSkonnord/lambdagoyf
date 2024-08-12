@@ -23,6 +23,8 @@ import java.util.Optional;
 
 public interface DeckElement<V extends CardVersion> {
 
+    public String getCardName();
+
     public Optional<V> getVersion();
 
 }

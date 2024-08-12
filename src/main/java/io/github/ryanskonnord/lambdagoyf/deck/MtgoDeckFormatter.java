@@ -216,7 +216,7 @@ public final class MtgoDeckFormatter {
     private static String formatDekEntry(DeckEntry<MtgoDeck.CardEntry> entry) {
         return String.format("  <Cards CatID=\"%d\" Quantity=\"%d\" Sideboard=\"%s\" Name=\"%s\" />\n",
                 entry.card.getId(), entry.quantity, entry.isInSideboard,
-                entry.card.getName().replace("\"", "&quot;"));
+                entry.card.getCardName().replace("\"", "&quot;"));
     }
 
     public static void writeDek(OutputStream outputStream, Deck<MtgoDeck.CardEntry> deck) throws IOException {

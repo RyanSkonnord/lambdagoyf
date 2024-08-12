@@ -169,7 +169,7 @@ public final class DeckConstructor<V extends CardVersion, T extends DeckElement<
                 .thenComparing(Comparator.comparing(ArenaCard::getEdition).reversed());
         return new Builder<>(CardVersionExtractor.getArenaCard(), ArenaCard::getDeckEntry)
                 .withPreferenceOrder().set(defaultOrder)
-                .withFallback(card -> Stream.of(new ArenaDeckEntry(card.getMainName())));
+                .withFallback(card -> Stream.of(ArenaDeckEntry.fromSimpleCardName(card.getMainName())));
     }
 
 

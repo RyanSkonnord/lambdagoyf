@@ -581,7 +581,7 @@ public final class RyansMtgoDecks {
                 .filter(e -> e.getVersion().isEmpty())
                 .sorted(Comparator.comparing(MtgoDeck.CardEntry::getId))
                 .collect(MapCollectors.<MtgoDeck.CardEntry>collecting()
-                        .indexing(e -> CardNames.normalize(e.getName()))
+                        .indexing(e -> CardNames.normalize(e.getCardName()))
                         .grouping().toImmutableSetMultimap());
         return (Card card) -> fallbackVersions.get(CardNames.normalize(card.getMainName())).stream();
     }
