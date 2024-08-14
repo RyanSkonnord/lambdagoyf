@@ -160,8 +160,7 @@ public final class ArenaDeckFormatter {
                 }
                 int count = Integer.parseInt(matcher.group(1));
                 String entryStr = matcher.group(2);
-                ArenaDeckEntry entryObj = ArenaDeckEntry.parse(entryStr)
-                        .orElseThrow(() -> new DeckDataException("Invalid Arena deck syntax: " + entryStr));
+                ArenaDeckEntry entryObj = ArenaDeckEntry.parse(entryStr);
                 builder.addTo(currentSection, entryObj, count);
             }
         }

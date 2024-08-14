@@ -24,8 +24,6 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 
 import java.util.Objects;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public final class MultisetUtil {
 
@@ -35,11 +33,5 @@ public final class MultisetUtil {
         if (count == 0) return ImmutableMultiset.of();
         return ImmutableMultiset.<E>builder().addCopies(element, count).build();
     }
-
-
-    private static <E> Stream<E> repeating(E element, int count) {
-        return IntStream.range(0, count).mapToObj(i -> element);
-    }
-
 
 }

@@ -29,6 +29,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
+    public static class ArenaDeckEntryDataException extends RuntimeException {
+        private ArenaDeckEntryDataException(String message) {
+            super(message);
+        }
+    }
+
+
 
     private final String cardName;
     private final Optional<ArenaVersionId> versionId;
@@ -60,16 +67,16 @@ public final class ArenaDeckEntry implements DeckElement<ArenaCard> {
         return new ArenaDeckEntry(cardName);
     }
 
-    public static Optional<ArenaDeckEntry> parse(String entry) {
+    public static ArenaDeckEntry parse(String entry) {
         Matcher matcher = ENTRY_PATTERN.matcher(entry);
-        if (!matcher.matches()) return Optional.empty();
+        if (!matcher.matches()) throw new ArenaDeckEntryDataException("Invalid Arena deck syntax: " + entry);
 
         String name = matcher.group("name");
         String expansionCode = matcher.group("expansionCode");
         String number = matcher.group("number");
         return expansionCode == null && number == null
-                ? Optional.of(new ArenaDeckEntry(name))
-                : Optional.of(new ArenaDeckEntry(name, expansionCode, Integer.parseInt(number)));
+                ? new ArenaDeckEntry(name)
+                : new ArenaDeckEntry(name, expansionCode, Integer.parseInt(number));
     }
 
     @Override

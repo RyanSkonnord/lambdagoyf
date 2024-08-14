@@ -114,11 +114,18 @@ public final class OrderingUtil {
                                                                          Iterable<? extends T> o2) {
         return compareLexicographically(Comparator.naturalOrder(), o1, o2);
     }
+    public static <T extends Comparable<T>> int compareLexicographically(Iterator<? extends T> o1,
+                                                                         Iterator<? extends T> o2) {
+        return compareLexicographically(Comparator.naturalOrder(), o1, o2);
+    }
 
     public static <T> int compareLexicographically(Comparator<? super T> comparator,
                                                    Iterable<? extends T> o1, Iterable<? extends T> o2) {
-        Iterator<? extends T> i1 = o1.iterator();
-        Iterator<? extends T> i2 = o2.iterator();
+        return compareLexicographically(comparator, o1.iterator(), o2.iterator());
+    }
+
+    public static <T> int compareLexicographically(Comparator<? super T> comparator,
+                                                   Iterator<? extends T> i1, Iterator<? extends T> i2) {
         while (i1.hasNext() && i2.hasNext()) {
             int cmp = comparator.compare(i1.next(), i2.next());
             if (cmp != 0) return cmp;

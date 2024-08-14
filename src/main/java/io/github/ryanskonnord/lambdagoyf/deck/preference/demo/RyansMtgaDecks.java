@@ -28,6 +28,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 import io.github.ryanskonnord.lambdagoyf.Environment;
 import io.github.ryanskonnord.lambdagoyf.card.AlchemyConverter;
 import io.github.ryanskonnord.lambdagoyf.card.ArenaCard;
@@ -57,6 +58,7 @@ import io.github.ryanskonnord.lambdagoyf.deck.preference.MinimalArtistGrouper;
 import io.github.ryanskonnord.lambdagoyf.scryfall.ScryfallParser;
 import io.github.ryanskonnord.util.MapCollectors;
 import io.github.ryanskonnord.util.MultisetUtil;
+import io.github.ryanskonnord.util.OrderingUtil;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -66,9 +68,11 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -85,6 +89,9 @@ import java.util.stream.Stream;
 
 import static io.github.ryanskonnord.lambdagoyf.card.field.CardSupertype.BASIC;
 import static io.github.ryanskonnord.lambdagoyf.card.field.CardSupertype.SNOW;
+import static io.github.ryanskonnord.util.OrderingUtil.OptionalComparator.build;
+
+;
 
 public final class RyansMtgaDecks {
 
@@ -138,7 +145,7 @@ public final class RyansMtgaDecks {
     private static final ImmutableList<String> UNF_ORBITAL = buildBasicLandSet("UNF", 240, 1);
     private static final ImmutableList<String> UNF_PLANETARY = buildBasicLandSet("UNF", 235, 1);
     private static final ImmutableList<String> MOM_BIG_SYMBOL_LANDS = ImmutableList.of(
-            "1 Plains (MOM) 283", "Island (MOM) 284", "Swamp (MOM) 287", "Mountain (MOM) 289", "Forest (MOM) 291)");
+            "Plains (MOM) 283", "Island (MOM) 284", "Swamp (MOM) 287", "Mountain (MOM) 289", "Forest (MOM) 291");
     private static final ImmutableList<String> MOM_INVASION_LANDS = ImmutableList.of(
             "Plains (MOM) 282", "Island (MOM) 285", "Swamp (MOM) 286", "Mountain (MOM) 288", "Forest (MOM) 290");
 
@@ -149,19 +156,22 @@ public final class RyansMtgaDecks {
             return buildBasicLandSet("BLB", 262 + ordinal(), 4);
         }
 
-        public static ImmutableList<ImmutableSet<ArenaDeckEntry>> getGroups() {
+        public static ImmutableSet<ImmutableSet<ArenaDeckEntry>> getGroups() {
             return EnumSet.allOf(BloomburrowLandSeason.class).stream()
                     .map(BloomburrowLandSeason::getEntries)
                     .map(RyansMtgaDecks::parseEntries)
-                    .collect(ImmutableList.toImmutableList());
+                    .collect(ImmutableSet.toImmutableSet());
         }
     }
 
-    private static final ImmutableList<String> MODERN_HORIZONS_SNOW_LANDS = buildBasicLandSet("MH1", 250, 1)
-            .stream().map(name -> "Snow-Covered " + name).collect(ImmutableList.toImmutableList());
-    private static final ImmutableList<String> PIXEL_SNOW_LANDS = buildBasicLandSet("SLD", 325, 1)
-            .stream().map(name -> "Snow-Covered " + name).collect(ImmutableList.toImmutableList());
+    private static final ImmutableList<String> makeSnowBasicLandSet(String setCode, int startingNumber, int increment) {
+        return buildBasicLandSet(setCode, startingNumber, increment)
+                .stream().map(name -> "Snow-Covered " + name).collect(ImmutableList.toImmutableList());
+    }
 
+    private static final ImmutableList<String> MODERN_HORIZONS_SNOW_LANDS = makeSnowBasicLandSet("MH1", 250, 1);
+    private static final ImmutableList<String> PIXEL_SNOW_LANDS = makeSnowBasicLandSet("SLD", 325, 1);
+    private static final ImmutableList<String> ELK64_SNOW_LANDS = makeSnowBasicLandSet("SLD", 1473, 1);
 
     private static final ImmutableSet<String> ETERNAL_FAVORITES = ImmutableSet.<String>builder()
             .addAll(CORE_SET_TAPLANDS)
@@ -189,39 +199,56 @@ public final class RyansMtgaDecks {
     }
 
     private static ImmutableSet<ArenaDeckEntry> parseEntries(Collection<String> rawEntries) {
-        return rawEntries.stream()
-                .map(e -> ArenaDeckEntry.parse(e).orElseThrow(IllegalArgumentException::new))
+        ImmutableSet<ArenaDeckEntry> parsed = rawEntries.stream()
+                .map(ArenaDeckEntry::parse)
                 .collect(ImmutableSet.toImmutableSet());
+        for (ArenaDeckEntry entry : parsed) {
+            Preconditions.checkArgument(entry.getVersionId().isPresent(),
+                    "Entry must include set and collector number");
+        }
+        return parsed;
     }
 
 
-    private static ImmutableList<ImmutableSet<ArenaDeckEntry>> standardLandChoices() {
-        List<ImmutableSet<ArenaDeckEntry>> groups = new ArrayList<>(9);
+    private static Set<ImmutableSet<ArenaDeckEntry>> standardLandChoices() {
+        Set<ImmutableSet<ArenaDeckEntry>> groups = Sets.newHashSetWithExpectedSize(9);
         Stream.of(MOM_INVASION_LANDS, MOM_BIG_SYMBOL_LANDS, ONE_PHYREXIAN_LANDS, ONE_FULL_ART_LANDS, DMU_STAINED_GLASS_LANDS)
                 .map(RyansMtgaDecks::parseEntries)
                 .forEachOrdered(groups::add);
         groups.addAll(BloomburrowLandSeason.getGroups());
-        return ImmutableList.copyOf(groups);
+        return groups;
     }
 
-    private static ImmutableList<ImmutableSet<ArenaDeckEntry>> explorerLandChoices() {
-        List<ImmutableSet<ArenaDeckEntry>> groups = new ArrayList<>(16);
+    private static Set<ImmutableSet<ArenaDeckEntry>> explorerLandChoices() {
+        Set<ImmutableSet<ArenaDeckEntry>> groups = Sets.newHashSetWithExpectedSize(16);
         Stream.of(SNC_DARK_ART_DECO_LANDS, SNC_LIGHT_ART_DECO_LANDS, HOUR_FULL_ART_LANDS, AMONKHET_FULL_ART_LANDS,
                         M21_SHOWCASE_LANDS, NYX_LANDS)
                 .map(RyansMtgaDecks::parseEntries)
                 .forEachOrdered(groups::add);
         groups.addAll(standardLandChoices());
         groups.removeAll(BloomburrowLandSeason.getGroups());
-        return ImmutableList.copyOf(groups);
+        return groups;
     }
 
-    private static ImmutableList<ImmutableSet<ArenaDeckEntry>> timelessLandChoices() {
-        List<ImmutableSet<ArenaDeckEntry>> groups = new ArrayList<>(22);
+    private static Set<ImmutableSet<ArenaDeckEntry>> timelessLandChoices() {
+        Set<ImmutableSet<ArenaDeckEntry>> groups = Sets.newHashSetWithExpectedSize(22);
         Stream.of(DRACULA_LANDS, BOB_ROSS_PAID_LANDS, BOB_ROSS_FREE_LANDS, GODZILLA_LANDS, UNF_PLANETARY, UNF_ORBITAL)
                 .map(RyansMtgaDecks::parseEntries)
                 .forEachOrdered(groups::add);
         groups.addAll(explorerLandChoices());
-        return ImmutableList.copyOf(groups);
+        return groups;
+    }
+
+    private static Set<ImmutableSet<ArenaDeckEntry>> snowLandChoices() {
+        Set<Collection<String>> groups = Sets.newHashSetWithExpectedSize(5);
+        groups.add(ImmutableList.of( // by Adam Paquette
+                "Snow-Covered Plains (KHM) 277", "Snow-Covered Island (KHM) 279", "Snow-Covered Swamp (KHM) 280",
+                "Snow-Covered Mountain (KHM) 282", "Snow-Covered Forest (KHM) 284"));
+        groups.add(ImmutableList.of( // by other artists
+                "Snow-Covered Plains (KHM) 276", "Snow-Covered Island (KHM) 278", "Snow-Covered Swamp (KHM) 281",
+                "Snow-Covered Mountain (KHM) 283", "Snow-Covered Forest (KHM) 285"));
+        Collections.addAll(groups, MODERN_HORIZONS_SNOW_LANDS, PIXEL_SNOW_LANDS, ELK64_SNOW_LANDS);
+        return groups.stream().map(RyansMtgaDecks::parseEntries).collect(ImmutableSet.toImmutableSet());
     }
 
 
@@ -285,7 +312,7 @@ public final class RyansMtgaDecks {
         generate(spoiler, rootDirectory.resolve("Standard"), builder -> builder
                         .addDeckTransformation(fromAlchemy)
                         .withPreferenceOrder().override(Comparator.comparing((CardVersion version) -> isSubrareAfter(version, "2022-09-09")).reversed())
-                        .addOutputTransformation(randomReplacement(BloomburrowLandSeason.getGroups()))
+                        .addOutputTransformation(randomArenaReplacement(BloomburrowLandSeason.getGroups()))
 //                .addVersionTransformation(broGroups)
         );
         generate(spoiler, rootDirectory.resolve("Explorer"), builder -> builder
@@ -293,7 +320,7 @@ public final class RyansMtgaDecks {
                 .withPreferenceOrder().override(preferArenaEntries(ETERNAL_FAVORITES, UNSTABLE_LANDS, MODERN_HORIZONS_SNOW_LANDS))
                 .withPreferenceOrder().override(Comparator.comparing(c -> c.getEdition().getExpansion().isNamed("Strixhaven Mystical Archive")))
                 .addDeckTransformation(deck -> CompanionLegality.addMissingCompanion(spoiler, deck, c -> true, Function.identity()))
-                .addOutputTransformation(randomReplacement(explorerLandChoices())));
+                .addOutputTransformation(randomArenaReplacement(explorerLandChoices())));
 
         generate(spoiler, rootDirectory.resolve("Alchemy"), builder -> builder
                 .addDeckTransformation(toAlchemy)
@@ -309,17 +336,57 @@ public final class RyansMtgaDecks {
                 .withPreferenceOrder().override(Comparator.comparing(c -> !c.getEdition().getExpansion().isNamed("Strixhaven Mystical Archive")))
                 .withPreferenceOrder().override(preferArenaEntries(ETERNAL_FAVORITES, M21_SHOWCASE_LANDS, MODERN_HORIZONS_SNOW_LANDS))
                 .addDeckTransformation(deck -> CompanionLegality.addMissingCompanion(spoiler, deck, c -> true, Function.identity()))
-                .addOutputTransformation(randomReplacement(timelessLandChoices())));
+                .addOutputTransformation(randomArenaReplacement(timelessLandChoices())));
         generate(spoiler, rootDirectory.resolve("Historic Brawl"), builder -> builder
                 .addDeckTransformation(toAlchemy)
                 .withPreferenceOrder().override(Comparator.comparing(c -> !c.getEdition().getExpansion().isNamed("Strixhaven Mystical Archive")))
                 .withPreferenceOrder().override(preferArenaEntries(ETERNAL_FAVORITES, UNHINGED_LANDS, MODERN_HORIZONS_SNOW_LANDS))
                 .addDeckTransformation(CommanderLegality::inferCommander)
-                .addOutputTransformation(useBasicLandsMatchingCommander(CardVersionExtractor.getArenaCard(), ArenaDeckEntry::new, c -> c.getEdition().isFullArt())));
+                .addOutputTransformation(useBasicLandsMatchingCommander(CardVersionExtractor.getArenaCard(), ArenaDeckEntry::new, c -> c.getEdition().isFullArt()))
+                .addOutputTransformation(randomArenaReplacement(snowLandChoices())));
+    }
+
+    private static final Comparator<Collection<ArenaDeckEntry>> ARBITRARY_GROUP_ORDER = new Comparator<>() {
+        private final Comparator<ArenaVersionId> versionIdComparator = Comparator
+                .comparing(ArenaVersionId::getExpansionCode) // alphabetical, not by release date
+                .thenComparing(ArenaVersionId::getCollectorNumber);
+        private final Comparator<ArenaDeckEntry> entryComparator = build(ArenaDeckEntry::getVersionId, versionIdComparator).emptyKeysFirst()
+                .thenComparing(ArenaDeckEntry::getCardName);
+
+        @Override
+        public int compare(Collection<ArenaDeckEntry> o1, Collection<ArenaDeckEntry> o2) {
+            if (o1 == o2) return 0;
+
+            // Groups generally have no overlap, so try comparing only one element first
+            Optional<ArenaDeckEntry> m1 = o1.stream().min(entryComparator);
+            Optional<ArenaDeckEntry> m2 = o2.stream().min(entryComparator);
+            if (m1.isPresent() && m2.isPresent()) {
+                int minCompare = entryComparator.compare(m1.get(), m2.get());
+                if (minCompare != 0) return minCompare;
+            }
+
+            // Fall back to comparing all elements
+            Iterator<ArenaDeckEntry> s1 = o1.stream().sorted(entryComparator).iterator();
+            Iterator<ArenaDeckEntry> s2 = o2.stream().sorted(entryComparator).iterator();
+            return OrderingUtil.compareLexicographically(entryComparator, s1, s2);
+        }
+    };
+
+    private static UnaryOperator<Deck<ArenaDeckEntry>> randomArenaReplacement(Collection<? extends Collection<ArenaDeckEntry>> groups) {
+        for (Collection<ArenaDeckEntry> group : groups) {
+            for (ArenaDeckEntry entry : group) {
+                Preconditions.checkArgument(entry.getVersionId().isPresent());
+            }
+        }
+
+        // Impose a consistent order so that random yields are stable even if a group has inconsistent iteration order
+        List<Collection<ArenaDeckEntry>> sortedGroups = ImmutableList.sortedCopyOf(ARBITRARY_GROUP_ORDER, groups);
+
+        return randomReplacement(sortedGroups);
     }
 
     private static <V extends CardVersion, T extends DeckElement<V>> UnaryOperator<Deck<T>> randomReplacement(Collection<? extends Collection<T>> groups) {
-        Preconditions.checkArgument(!groups.isEmpty());
+        Preconditions.checkArgument(!groups.isEmpty(), "Groups must not be empty");
         return (Deck<T> deck) -> {
             Deck<Card> unversionedDeck = deck.flatTransform(card -> card.getVersion().map(CardVersion::getCard));
             DeckRandomChoice rng = DeckRandomChoice.withSalt(0x2f9dfb3a39bb54ccL).forDeck(unversionedDeck);
@@ -411,8 +478,7 @@ public final class RyansMtgaDecks {
         Map<String, ArenaVersionId> parsedEntries = new HashMap<>();
         for (Collection<String> step : favoriteSteps) {
             ImmutableMap<String, ArenaVersionId> mapForStep = step.stream()
-                    .map(entry -> ArenaDeckEntry.parse(entry).orElseThrow(() ->
-                            new IllegalArgumentException("Arena deck entry not recognized: " + entry)))
+                    .map(ArenaDeckEntry::parse)
                     .collect(MapCollectors.<ArenaDeckEntry>collecting()
                             .withKey(ArenaDeckEntry::getCardName)
                             .withValue(e -> e.getVersionId().orElseThrow(() ->
